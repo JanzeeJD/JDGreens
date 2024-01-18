@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<%- include('partials/_head.ejs') %>
+
+<body class="g-sidenav-show bg-gray-200">
+  <%- include('partials/_navbar.ejs') %>
+  <%- include('partials/_asidebar.ejs') %>
+
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    
+    <!-- End Navbar -->
+    <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3" style="display:flex; justify-content: space-between;">
+                <div>
+                  <h6 class="text-white text-capitalize ps-3">Category Management</h6>
+                </div>
+                <div style="margin-right: 2rem">
+                  <a class="btn btn-outline-white btn-sm mb-0 me-3"
+                  href="/admin/category/add-category"><i class="fa fa-plus" style="vertical-align: middle;"></i> New Category</a>
+                </div>
+              </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">ID</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% locals.categories.forEach(category => { %>                     
+                      <tr id="<%= category._id %>-row">
+                        <td>
+                          <h6 class="mb-0 text-sm text-center"><%= category._id.toString().slice(-4) %></h6>
+                        </td>
+                        <td>
+                          <div class="d-flex px-2 py-1">
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 title="<%= category.description %>" class="mb-0 text-sm text-center"><%= category.name %></h6>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="align-middle" style="display: flex;align-items:center;justify-content: center">
+                          <div>
+                            <a 
+                              class="btn btn-outline-primary btn-sm mb-0" 
+                              href="/admin/category/edit-category/<%= category._id %>"
+                            >
+                              Edit
+                            </a>
+                            <button 
+                              class="btn btn-outline-primary btn-sm mb-0" 
+                              onclick="deleteCategory('<%= category._id %>')"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%- include('partials/_footer.ejs') %>
+      </div>
+      
+    </div>
+  </main> 
+  <!--   Core JS Files   -->
+  <script>
+    function deleteCategory(categoryId) {
+      const confirmed = confirm("Are you sure you wish to delete this category?");
+
+      if (!confirmed) {
+        return;
+      }
+
+      fetch(`/admin/category/${categoryId}`, { method: "DELETE" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById(`${categoryId}-row`).remove()
+        } else {
+          alert("An error occured. Check console.");
+          console.error(data.error);
+        }
+      }).catch(err => {
+        alert("A fetch error occured. Check console.");
+        console.error(err);
+      });
+    }
+  </script>
+  <script src="/assets/js/core/popper.min.js"></script>
+  <script src="/assets/js/core/bootstrap.min.js"></script>
+  <script src="/assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="/assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="/assets/js/material-dashboard.min.js?v=3.1.0"></script>
+  <%- include('partials/_scripts.ejs') %>
+</body>
+
+</html>

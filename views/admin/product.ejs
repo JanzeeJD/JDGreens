@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('partials/_head.ejs') %>
+
+<body class="g-sidenav-show  bg-gray-200">
+  <%- include('partials/_navbar.ejs') %>
+  <%- include('partials/_asidebar.ejs') %>
+  
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+     <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3" style="display:flex; justify-content: space-between;">
+                <div>
+                  <h6 class="text-white text-capitalize ps-3">Product Management</h6>
+                </div>
+                <div style="margin-right: 2rem">
+                  <a class="btn btn-outline-white btn-sm mb-0 me-3"
+                  href="/admin/product/add-product"><i class="fa fa-plus" style="vertical-align: middle;"></i> New Product</a>
+                </div>
+              </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Name</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Stock</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                    </tr>
+                    
+                  </thead>
+                  <tbody>
+                    <% locals.products.forEach(product => { %>
+                      <tr id="<%= product._id %>-row">
+                        <td>
+                          <div class="d-flex px-2 py-1">
+                            <div>
+                              <img src="/uploads/products/<%= product.images[0] %>" class="avatar avatar-sm me-3 border-radius-lg">
+                            </div>
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm"><%= product.name %></h6>
+                              <p class="text-xs text-secondary mb-0"><%= product.category?.name %></p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0 text-center">₹ <%= product.price %></p>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span id="<%= product._id %>-status-badge" class="badge badge-sm bg-gradient-secondary">
+                            <%= product.isListed ? "Listed" : "Unlisted" %>
+                          </span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold"><%= product.stock %></span>
+                        </td>
+                        <td class="align-middle" style="display: flex;align-items:center;justify-content: center">
+                          <div>
+                            <a 
+                              class="btn btn-outline-primary btn-sm mb-0" 
+                              href="/admin/product/edit-product/<%= product._id %>"
+                            >
+                              Edit
+                            </a>
+                            <button 
+                              class="btn btn-outline-primary btn-sm mb-0" 
+                              id="<%= product._id %>-status-btn"
+                              onclick="toggleListing('<%= product._id %>')"
+                            >
+                              Unlist
+                            </button>
+                            <button 
+                              class="btn btn-outline-primary btn-sm mb-0" 
+                              onclick="softDelete('<%= product._id %>')"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        
+      </div>
+      <%- include('partials/_footer.ejs') %>
+    </div>
+  </main>
+  <!--   Core JS Files   -->
+  <script>
+    function softDelete(productId) {
+
+      const productRow = document.getElementById(`${productId}-row`);
+
+      fetch(`/admin/product/${productId}`, {
+        method: "DELETE",
+      }).then(res => {
+        if (res.ok) {
+          productRow.remove();
+          // todo: Add a toast alert.
+        } else {
+          alert("An error occured. Check console.");
+          console.error(res);
+        }
+      }).catch(err => {
+        alert("A fetch error occured. Check console.");
+        console.error(err);
+      })
+    }
+
+    function toggleListing(productId) {
+      const listingBadge = document.getElementById(`${productId}-status-badge`);
+      const listButton = document.getElementById(`${productId}-status-btn`);
+
+      const isListed = listingBadge.innerText.toLowerCase() === 'listed';
+
+      fetch(`/admin/product/${productId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          isListed: !isListed
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+          const newListing = !isListed;
+          if (data.success) {
+            listingBadge.innerText = newListing ? "Listed" : "Unlisted";
+            listButton.innerText = newListing ? "Unlist" : "List";
+            if (newListing) {
+              sendToast("Product was listed");
+            } else {
+              sendToast("Product was unlisted");
+            }
+          } else {
+            alert("Could not set listing status. Check console for error.");
+            console.error(data.error);
+          }
+        }).catch(err => {
+          alert("A fetch error occured. Check console.");
+          console.error(err);
+        })
+    }
+  </script>
+  <script src="/assets/js/core/popper.min.js"></script>
+  <script src="/assets/js/core/bootstrap.min.js"></script>
+  <script src="/assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="/assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="/assets/js/material-dashboard.min.js?v=3.1.0"></script>
+  <%- include('partials/_scripts.ejs') %>
+</body>
+
+</html>
