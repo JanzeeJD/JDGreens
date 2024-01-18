@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify your account.</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background-image: url("/images/otp.jpg") ;
+    }
+
+    .jd-otp-container {
+      width: min(80%, 500px);
+      margin-inline: auto;
+      background: rgba(255, 255, 255, 0.5);
+      text-align: center;
+      padding: 30px 65px;
+      border-radius: 12px;
+      margin-top: 2rem;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .jd-otp-container header {
+      height: 65px;
+      width: 65px;
+      color: #fff;
+      font-size: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-inline: auto;
+    }
+
+    .jd-otp-container button {
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+      border: none;
+      background: #149253;
+      font-weight: bold;
+      margin-block: 1rem;
+      cursor: pointer;
+    }
+
+    .jd-otp-container .bx {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 65px;
+      height: 65px;
+      border-radius: 100%;
+      background: green;
+      margin-inline: auto;
+    }
+
+    .jd-otp-container .input-field {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .jd-otp-container .input-field input {
+      height: 45px;
+      width: 42px;
+      border-radius: 6px;
+      outline: none;
+      font-size: 1.125rem;
+      text-align: center;
+      border: 1px solid rgba(14, 14, 14, 0.35);
+    }
+
+    .jd-otp-container .input-field input::-webkit-inner-spin-button,
+    .jd-otp-container .input-field input::-webkit-outer-spin-button {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="jd-otp-container">
+    <header>
+      <i class="bx bxs-check-shield"></i>
+    </header>
+    <h4>Enter OTP</h4>
+    <form id="otpForm" action="/signup-otp" method="POST">
+      <div class="input-field">
+        <input class="otp-digit" type="text" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+        <input class="otp-digit" type="text" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+        <input class="otp-digit" type="text" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+        <input class="otp-digit" type="text" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" />
+      </div>
+      <p class="error-message">
+        <% locals.error %>
+      </p>
+      <button>Verify OTP</button>
+      <button type="button" id="resendOTPBtn" disabled>Resend OTP</button>
+    </form>
+  </div>
+  <script>
+    const otpBoxes = [...document.getElementsByClassName("otp-digit")];
+    const errorMessage = document.getElementsByClassName('error-message')[0];
+
+    otpBoxes[0].addEventListener('paste', (e) => {
+      let paste = (e.clipboardData || window.clipboardData).getData("text");
+      if (paste.length === otpBoxes.length && !isNaN(paste)) {
+        for (let i = 0; i < otpBoxes.length; i++) {
+          otpBoxes[i].value = paste[i];
+          otpBoxes[i].focus();
+        }
+      }
+    })
+
+    otpBoxes[0].focus();
+    otpBoxes.forEach((box, index) => {
+      box.addEventListener('input', (e) => {
+        if (otpBoxes[index + 1]) {
+          otpBoxes[index + 1].focus();
+        }
+      })
+    });
+
+    const resendOTPBtn= document.getElementById('resendOTPBtn');
+    setTimeout(() => {
+      resendOTPBtn.disabled = false;
+    }, 30000);
+    resendOTPBtn.onclick = function() {
+      fetch("/resend-otp", { method: "POST" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          resendOTPBtn.disabled = true;
+          alert("A new OTP was sent.");
+        } else {
+          errorMessage.innerText = data.error;
+          console.error(data.error);
+        }
+      }).catch(console.error);
+    }
+
+    document.getElementById('otpForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      errorMessage.innerText = "";
+
+      let value = '';
+      otpBoxes.forEach(e => value += e.value);
+
+      if (!value) {
+        errorMessage.innerText = "Enter an OTP!";
+        return;
+      }
+      console.log(value, "was submitted.");
+
+      fetch('/signup-otp', {
+        method: "POST",
+        body: JSON.stringify({
+          otp: Number(value)
+        }),
+        headers: { "Content-Type": "application/json" }
+      }).then(res => res.json())
+        .then(data => {
+          // backendil ninnu vanna data
+          if (data.success) {
+            // otp was fine!
+            window.location.href = '/login?new=true';
+          } else {
+            // invalid otp
+            errorMessage.innerText = "Invalid OTP was entered.";
+          }
+        })
+        .catch(err => {
+          errorMessage.innerText = err.message;
+          console.error(err);
+        })
+    })
+  </script>
+</body>
+
+</html>
