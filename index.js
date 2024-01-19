@@ -16,6 +16,7 @@ import adminAuthRoutes from './routes/admin/adminAuthRoutes.js'
 import adminUserRoutes from './routes/admin/adminUserRoutes.js'
 import adminProductRoutes from './routes/admin/adminProductRoutes.js'
 import adminCategoryRoutes from './routes/admin/adminCategoryRoutes.js'
+import { applyLocals } from './middlewares/authMiddleware.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -58,12 +59,13 @@ app.use(session({
   store: mongoStore
 }));
 
-app.use((req, res, next) => {
-  console.log(`[hit] ${req.method} - ${req.url}`)
-  next();
-})
+// app.use((req, res, next) => {
+//   console.log(`[hit] ${req.method} - ${req.url}`)
+//   next();
+// })
  
 app.use(nocache())
+app.use(applyLocals);
 app.use('/', homeRoutes);
 app.use('/', shopRoutes);
 app.use('/user', userRoutes);
