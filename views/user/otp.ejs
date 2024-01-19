@@ -105,9 +105,37 @@
       </p>
       <button>Verify OTP</button>
       <button type="button" id="resendOTPBtn" disabled>Resend OTP</button>
+      <p id="countdown">⏳ 60</p>
+
     </form>
   </div>
   <script>
+    
+    // oru global counter variable, so that ore samayath oru countere running ayittu kittathollu.
+    var counter = null;
+    // nammude counter p tag edukkanam ini
+    const countdownElement = document.getElementById('countdown');
+
+    // oru function so that we can reuse the same functionality, duplicate code ezhutandallooo
+    function startCounter(seconds) {
+      // already counter running anel clear it
+      counter && clearInterval(counter);
+      // disable that button
+      resendOTPBtn.disabled = true;
+      
+      let countDownSeconds = seconds;
+      // ah global 'counter' variableil oru setInterval start cheyyuka, running every 1 second
+      counter = setInterval(() => {
+        countDownSeconds--;
+        countdownElement.innerText = "⏳ " + countDownSeconds;
+        if (countDownSeconds <= 0) {
+          // ellam kazhiyumbo counterum venda, buttonum clickable akkam
+          clearInterval(counter);
+          resendOTPBtn.disabled = false;
+        }
+      }, 1000);
+    }
+    
     const otpBoxes = [...document.getElementsByClassName("otp-digit")];
     const errorMessage = document.getElementsByClassName('error-message')[0];
 
@@ -131,16 +159,17 @@
     });
 
     const resendOTPBtn= document.getElementById('resendOTPBtn');
-    setTimeout(() => {
-      resendOTPBtn.disabled = false;
-    }, 30000);
+    // page load avumbozhum counter venollo
+    startCounter(60);
+
     resendOTPBtn.onclick = function() {
       fetch("/resend-otp", { method: "POST" })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          resendOTPBtn.disabled = true;
           alert("A new OTP was sent.");
+          // resend button click cheyyumbo, veendum counter run cheyyanam
+          startCounter(60);
         } else {
           errorMessage.innerText = data.error;
           console.error(data.error);
@@ -183,6 +212,7 @@
           console.error(err);
         })
     })
+
   </script>
 </body>
 
