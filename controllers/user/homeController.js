@@ -45,6 +45,11 @@ export async function PostLogin(req, res) {
     return;
   }
 
+  if (!user.isVerified) {
+    res.render("user/auth", { loginError: "You are not verified. ⚠️" })
+    return;
+  }
+
   if (await bcrypt.compare(password, user.password)) {
     req.session.loggedIn = true;
     req.session.email = req.body.email;
@@ -88,8 +93,12 @@ export async function PostSignup(req, res) {
 
   const existingUser = await User.findOne({ email: email });
   if (existingUser) {
-    res.render("user/auth", { override: true, signupError: "user already exists" })
-    return;
+    if (!existingUser.isVerified) {
+      await existingUser.remove();
+    } else {
+      res.render("user/auth", { override: true, signupError: "user already exists" })
+      return;
+    }
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -120,8 +129,8 @@ export function GetLogout(req, res) {
   } else {
     res.end();
   }
- }
- 
+}
+
 
 export function GetOTPPage(req, res) {
   if (!req.session.newlyRegistered) {
@@ -131,14 +140,14 @@ export function GetOTPPage(req, res) {
   }
 }
 
-export function PostOTPPage(req, res) {
+export async function PostOTPPage(req, res) {
   const otp = req.body.otp;
   if (!otp) {
     res.status(403).send({ success: false, error: "An invalid OTP was entered." });
     return;
   }
 
-  if (Date.now() <= req.session.otpExpiry) {
+  if (Date.now() > req.session.otpExpiry) {
     res.status(403).send({ success: false, error: "The timer has run out." });
     return;
   }
@@ -147,6 +156,11 @@ export function PostOTPPage(req, res) {
     req.session.otp = null;
     req.session.otpExpiry = 0;
     req.session.newlyRegistered = false;
+    const user = await User.findOneAndUpdate({ email: req.session.email }, { $set: { isVerified: true } });
+    if (!user) {
+      res.status(404).send({ success: false, error: "User not found." });
+      return;
+    }
     res.status(200).send({ success: true })
   } else {
     res.status(403).send({ success: false, error: "An invalid OTP was entered." });
@@ -177,8 +191,8 @@ export async function PostResendOTP(req, res) {
 export async function GetHomePage(req, res) {
   const products = await Product.find().limit(4);
   res.render('user/index', { products });
- }
- 
+}
+
 
 /**
  * GET /

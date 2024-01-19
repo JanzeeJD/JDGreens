@@ -62,7 +62,7 @@
                       <input type="number" id="productPrice" name="productPrice">
                       <label for="productPrice">Product Stock:</label>
                       <input type="number" id="productStock" name="productStock">
-                      <label for="productImage">Product Image:</label>
+                      <label for="productImage">Product Images:</label>
                       <!-- <input type="file" id="productImages" name="productImages" accept="image/*" multiple> -->
 
                       <input type="file" id="productImages" name="productImages" data-image-preview="#imagePreview"
@@ -144,8 +144,6 @@
 
           }
 
-
-
           //crop and save on click
           crop.addEventListener('click', e => {
             e.preventDefault();
@@ -171,9 +169,7 @@
                     }
                   }
 
-
                   fileUploader.files = dt.files
-
 
                   let previewDiv = document.querySelector(fileUploader.dataset.imagePreview)
                   previewDiv.innerHTML = ""
