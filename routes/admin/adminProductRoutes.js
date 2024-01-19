@@ -4,7 +4,9 @@ import {
   GetAddProductPage,
   PostAddProduct,
   SoftDeleteProduct,
-  SetProductListing
+  SetProductListing,
+  GetEditProductPage,
+  PostEditProductPage
 } from '../../controllers/admin/adminProductController.js';
 import { getProductImages } from '../../utils/setupMulter.js';
 import { isAdmin } from '../../middlewares/adminAuthMiddleware.js';
@@ -20,7 +22,11 @@ router.post('/add-product', getProductImages.array("productImages", 4), (err, re
   req.imageError = true;
   next();
 }, PostAddProduct);
-// router.post('/add-product', upload.array('productImages', 4), PostAddProduct);
+router.get('/edit-product/:id', GetEditProductPage);
+router.post('/edit-product/:id', getProductImages.array("productImages", 4), (err, req, res, next) => {
+  req.imageError = true;
+  next();
+}, PostEditProductPage);
 
 
 
