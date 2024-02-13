@@ -35,7 +35,7 @@ export async function PostEditCategory(req, res) {
     const duplicateCategory = await Category.findOne({ name: {$regex : lowerCaseName, '$options' : 'i'} });
     if (duplicateCategory) {
       // If a category with the same name exists, render the add-category view with an error message
-      res.render("admin/add-category", { error: "Category already exists." });
+      res.render("admin/edit-category", { error: "Category already exists." });
       return;
     }
   }

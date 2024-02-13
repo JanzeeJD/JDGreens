@@ -5,6 +5,8 @@ import bcrypt from 'bcrypt';
 import User from '../../models/User.js';
 import Product from '../../models/Product.js';
 import Category from '../../models/Category.js';
+import Cart from '../../models/Cart.js';
+import { createMagicLink, verifyMagicLink } from '../../utils/magicLink.js';
 
 /**
  * **Route:** GET /
@@ -13,15 +15,16 @@ import Category from '../../models/Category.js';
  * @param {express.Request} req 
  * @param {express.Response} res
  */
-
-
 export function GetLoginPage(req, res) {
   if (req.query.new === 'true') {
     res.render('user/auth', { welcomeMessage: "You have registered a new account." });
+  } else if (req.query.pchange === 'true') {
+    res.render('user/auth', { welcomeMessage: "You have changed your password successfully." });
   } else {
     res.render('user/auth');
   }
 }
+
 
 export async function PostLogin(req, res) {
   const { email, password } = req.body;
@@ -53,6 +56,7 @@ export async function PostLogin(req, res) {
   if (await bcrypt.compare(password, user.password)) {
     req.session.loggedIn = true;
     req.session.email = req.body.email;
+    req.session.userId = user._id.toString();
     res.redirect('/');
 
   } else {
@@ -60,8 +64,56 @@ export async function PostLogin(req, res) {
     res.render("user/auth", { error: "Invalid credentials" })
   }
 }
+export async function PostForgotPassword(req, res) {
+  const { email } = req.body;
+  console.log(email + " requested magic link.");
+  const user = await User.findOne({ email });
+  if (!user) {
+    console.log("A mandan gave us a wrong email to pattikan")
+    res.status(200).send({ message: "Password OTP sent " });
+    // User is not found but we should not inform the client of that
+    // because they can misuse that information
+    // https://www.rapid7.com/blog/post/2017/06/15/about-user-enumeration/
 
+    // return res.status(404).send({ error: "User not found" })
+  }
 
+  const url = createMagicLink(`http://localhost:3000/change-password`, user._id);
+
+  // req.session.passwordOTP = Math.floor(1000 + Math.random() * 9000);
+  // req.session.passwordOTPExpiry = Date.now() + (3 * 60000);
+  // console.log(`[otp] ⚡ Password OTP for ${user.email} is ${req.session.passwordOTP} `);
+  console.log(`[magic link] ⚡ ${user.email} requested magic link: ${url}`)
+  res.status(200).send({ message: "Password OTP sent " });
+}
+
+export function GetChangePasswordPage(req, res) {
+  const { token } = req.params;
+
+  const tokenUserId = verifyMagicLink(token);
+  if (!tokenUserId) {
+    return res.redirect('/login');
+  } else {
+    res.render("user/change-password", { token });
+  }
+}
+
+export async function PostChangePassword(req, res) {
+  const token = req.params.token
+  const newPassword = req.body.newPassword;
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  const tokenUserId = verifyMagicLink(token);
+  if (tokenUserId) {
+    const user = await User.findById(tokenUserId)
+    user.password = hashedPassword
+    await user.save();
+    res.redirect('/login?pchange=true');
+  } else {
+    res.redirect('/login');
+  }
+
+}
 
 /**
  * GET /
@@ -104,6 +156,7 @@ export async function PostSignup(req, res) {
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
     const user = await User.create({ name, email, password: hashedPassword });
+    const cart = await Cart.create({ user: user._id });
     req.session.loggedIn = false;
     req.session.newlyRegistered = true;
     req.session.email = email;

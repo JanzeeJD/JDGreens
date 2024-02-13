@@ -12,6 +12,7 @@ import express from 'express';
  * @param {express.Response} res
  */
 export function GetAdminLogin(req, res) {
+ 
   if (req.session.isAdmin) {
     res.redirect('/admin/dashboard');
   } else {
