@@ -1,5 +1,7 @@
 import {Router} from 'express';
-import { GetShopPage, GetProductPage } from '../../controllers/user/shopController.js';
+import { GetShopPage, 
+  GetProductPage 
+} from '../../controllers/user/shopController.js';
 
 const router = Router();
 
