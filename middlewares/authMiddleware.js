@@ -19,6 +19,12 @@ export function alreadyLoggedIn(req, res, next) {
 }
 
 export function applyLocals(req, res, next) {
-  res.locals.loggedIn = req.session ? req.session.loggedIn : false;
+  res.locals.loggedIn = req.session ? req.session.loggedIn : false
+  
+  let searchParams = new URLSearchParams(req.query);
+  res.locals.searchParams = searchParams;
+  
+  searchParams.delete('page');
+  res.locals.queryParams = searchParams.toString();
   next();
 }
