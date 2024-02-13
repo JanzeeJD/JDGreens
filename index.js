@@ -3,8 +3,10 @@ import dotenv from 'dotenv'
 import session from 'express-session';
 import nocache from 'nocache';
 import mongoose from 'mongoose';
+import Razorpay from 'razorpay';
 import { default as connectMongoDBSession} from 'connect-mongodb-session';
 const MongoDBStore = connectMongoDBSession(session);
+import morgan from 'morgan';
 
 
 dotenv.config();
@@ -12,10 +14,12 @@ dotenv.config();
 import homeRoutes from './routes/user/homeRoutes.js';
 import userRoutes from './routes/user/userRoutes.js';
 import shopRoutes from './routes/user/shopRoutes.js';
+import cartRoutes from './routes/user/cartRoute.js';
 import adminAuthRoutes from './routes/admin/adminAuthRoutes.js'
 import adminUserRoutes from './routes/admin/adminUserRoutes.js'
 import adminProductRoutes from './routes/admin/adminProductRoutes.js'
 import adminCategoryRoutes from './routes/admin/adminCategoryRoutes.js'
+import adminCouponRoutes from './routes/admin/adminCouponRoutes.js'
 import { applyLocals } from './middlewares/authMiddleware.js';
 
 const app = express();
@@ -23,6 +27,7 @@ app.disable('x-powered-by');
 
 // Setup all the middlewares.
 app.use(express.static('public'));
+app.use(morgan('dev'));
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -68,12 +73,14 @@ app.use(nocache())
 app.use(applyLocals);
 app.use('/', homeRoutes);
 app.use('/', shopRoutes);
+app.use('/',cartRoutes);
 app.use('/user', userRoutes);
 
 app.use('/admin', adminAuthRoutes);
 app.use('/admin/users', adminUserRoutes);
 app.use('/admin/product', adminProductRoutes);
 app.use('/admin/category', adminCategoryRoutes);
+app.use('/admin/coupon', adminCouponRoutes);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
