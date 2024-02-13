@@ -1503,7 +1503,7 @@
 }
 /*------------------------------------------------------------------ All Pages -------------------------------------------------------------------*/
  .all-title-box{
-     background: url("../images/all-bg-title.jpg") no-repeat center center;
+     background: url("../images/bg1.jpg") no-repeat center center;
      -webkit-background-size: cover;
      -moz-background-size: cover;
      -ms-background-size: cover;
@@ -2303,7 +2303,7 @@
      animation: sonarEffect 1.3s ease-out 75ms;
 }
  .service-icon a:hover{
-     background: rgba(251, 183, 20, 1);
+     background: #28a745;
      -webkit-transform: scale(0.93);
      -moz-transform: scale(0.93);
      -ms-transform: scale(0.93);
@@ -2347,7 +2347,7 @@
          box-shadow: 0 0 0 2px rgba(0, 53, 68, 0.1), 0 0 10px 10px #149253, 0 0 0 10px rgba(0, 53, 68, 0.5);
     }
      100% {
-         box-shadow: 0 0 0 2px rgba(0, 53, 68, 0.1), 0 0 10px 10px #3851bc, 0 0 0 10px rgba(0, 53, 68, 0.5);
+         box-shadow: 0 0 0 2px rgba(0, 53, 68, 0.1), 0 0 10px 10px  #149253, 0 0 0 10px rgba(0, 53, 68, 0.5);
          transform: scale(1.5);
          opacity: 0;
     }
@@ -2597,4 +2597,5 @@
 	font-weight: 700;
 	padding: 12px 25px;
 	border: none;
+
 }
