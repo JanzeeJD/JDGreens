@@ -1,16 +1,18 @@
 // @ts-check
 
 import mongoose, { Schema } from 'mongoose';
+import paginate from 'mongoose-paginate-v2';
+
 
 const ProductSchema = new mongoose.Schema({
-  name:{
+name:{
     type:String,
     required:true
   },
   price:{
     type:Number,
     required:true
-  },
+  },  
   category:{
     type:Schema.Types.ObjectId,
     ref: "Category",
@@ -47,8 +49,12 @@ const ProductSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
     default: false
-  }
+  } 
+}, { 
+  timestamps: true
 });
+
+ProductSchema.plugin(paginate);
 
 const ProductModel = mongoose.model("Product", ProductSchema);
 export default ProductModel;

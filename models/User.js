@@ -27,7 +27,8 @@ const UserSchema = new mongoose.Schema({
     default: false
   },
   wishlist:[{
-    type:mongoose.Schema.ObjectId
+    type:mongoose.Schema.ObjectId,
+    ref: "Product"
   }],
   address:[{
       houseName:{
