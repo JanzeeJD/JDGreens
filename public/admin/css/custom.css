@@ -4,9 +4,24 @@ body{
 
 /* user side image previewer */
 
-#imagePreview img{
+/* #jd-productForm {
+  input, textarea {
+    width: 100%!important;
+    padding-block: .5rem;
+  }
+} */
+
+.existing-images {
+  margin-top: 1rem;
+  p {
+    margin: 0;
+  }
+}
+
+#existingImagePreview img, #imagePreview img{
   height: 50px;
   max-width: 80px;
+  position: relative;
 }
 
 #cropper110Modal{
@@ -47,4 +62,31 @@ width: calc(100%/2 - 1em);
 
 .cropper110-close{
   background-color: red;
+}
+
+#existingImagePreview {
+  display: flex;
+  gap: .5rem;
+}
+
+#existingImagePreview > div {
+  display: block;
+  position: relative;
+  i {
+    display: block;
+    position: absolute;
+    top:0;
+    background: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    margin: auto;
+    cursor: pointer;
+    &:hover {
+      color: maroon;
+    }
+  }
+  img {
+    display: block;
+  }
 }
