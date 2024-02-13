@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Basic -->
+
+<%- include('partials/_head', { title: "Cart" }) %>
+
+<body>
+    <%- include('partials/_pre-header') %>
+    <%- include('partials/_header', { active: 'cart' }) %>
+
+    <!-- Start All Title Box -->
+    <div class="all-title-box">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h2>Cart</h2>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Shop</a></li>
+                        <li class="breadcrumb-item active">Cart</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End All Title Box -->
+
+    <!-- Start Cart  -->
+    <div class="cart-box-main">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="table-main table-responsive">
+                        <table class="table" id="cartTable">
+                            <thead>
+                                <tr>
+                                    <th>Images</th>
+                                    <th>Product Name</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                 <% locals.cart.products.forEach(product => { %>
+                                    <tr id="<%= product.productId %>-row">
+                                        <td class="thumbnail-img">
+                                            <a href="#">
+                                               
+                                                <% if (product.image) { %>
+                                                    <img class="img-fluid" src="/uploads/products/<%= product.image %>" alt="" />
+                                                  <% } else { %>
+                                                    <% } %>
+                                                   
+                                            </a>
+                                          </td>
+                                        <td class="name-pr">
+                                            <a href="#">
+                                            <%= product.name %> 
+                                    </a>
+                                        </td>
+                                        
+                                        <td class="price-pr">
+                                            <p>₹ <%= product.price %></p>
+                                        </td>
+                                        <td class="quantity-box">
+                                            <input data-price="<%= product.price %>" data-id="<%= product.productId %>" type="number" size="4" value="<%= product.productQty %>" min="1" max="5" step="1" class="c-input-text qty text qty-input">
+                                        </td>
+                                        <td class="total-pr">
+                                            <p id="<%= product.productId %>-total">₹ <%= product.productQty * product.price %></p>
+                                        </td>
+                                        <td class="remove-pr">
+                                            <i style="cursor: pointer" class="fas fa-times remove-product" data-id="<%= product.productId %>"></i>
+                                        </td>
+                                    </tr>
+                                 <% }) %>
+                                
+                              
+                             
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row my-5">
+                <div class="col-lg-6 col-sm-6">
+                    <div class="coupon-box" style="visibility: hidden">
+                        <div class="input-group input-group-sm">
+                            <input class="form-control" placeholder="Enter your coupon code" aria-label="Coupon code" type="text">
+                            <div class="input-group-append">
+                                <button class="btn btn-theme" type="button">Apply Coupon</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row my-5">
+                <div class="col-lg-8 col-sm-12"></div>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="order-box">
+                        <h3>Order summary</h3>
+                        <div class="d-flex">
+                            <h4>Sub Total</h4>
+                            <div class="ml-auto font-weight-bold" id="subTotal"> ₹ <%= locals.total %> </div>
+                        </div>
+                        <!-- <div class="d-flex">
+                            <h4>Discount</h4>
+                            <div class="ml-auto font-weight-bold">  40 </div>
+                        </div> -->
+                        <hr class="my-1">
+                        <!-- <div class="d-flex">
+                            <h4>Coupon Discount</h4>
+                            <div class="ml-auto font-weight-bold">  10 </div>
+                        </div> -->
+                        <!-- <div class="d-flex">
+                            <h4>Tax</h4>
+                            <div class="ml-auto font-weight-bold">  2 </div>
+                        </div> -->
+                        <div class="d-flex">
+                            <h4>Shipping Cost</h4>
+                            <div class="ml-auto font-weight-bold"> Free </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex gr-total">
+                            <h5>Grand Total</h5>
+                            <div class="ml-auto h5" id="grandTotal"> ₹ <%= locals.total %> </div>
+                        </div>
+                        <hr> </div>
+                </div>
+                <div class="col-12 d-flex shopping-box"><a href="/user/checkout" class="ml-auto btn hvr-hover">Checkout</a> </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- End Cart -->
+
+    <%- include('partials/_insta') %>
+    <%- include('partials/_footer') %>
+    
+    <%- include('partials/_scripts') %>
+    <!-- ALL PLUGINS -->
+    <script src="/js/jquery.superslides.min.js"></script>
+    <script src="/js/bootstrap-select.js"></script>
+    <script src="/js/inewsticker.js"></script>
+    <script src="/js/bootsnav.js."></script>
+    <script src="/js/images-loded.min.js"></script>
+    <script src="/js/isotope.min.js"></script>
+    <script src="/js/owl.carousel.min.js"></script>
+    <script src="/js/baguetteBox.min.js"></script>
+    <script src="/js/form-validator.min.js"></script>
+    <script src="/js/contact-form-script.js"></script>
+    <script src="/js/custom.js"></script>
+    <script>
+
+        // Event is delegate
+        const cartTable = document.getElementById('cartTable');
+        cartTable.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-product')) {
+                const productId = e.target.dataset.id;
+                const tableRow = document.getElementById(productId + '-row');
+
+                fetch(`/cart/${productId}`,{
+                        method:'DELETE',
+                }).then(res => {
+                    if (res.ok) {
+                        tableRow.remove();
+                        return res.json();
+                    } else {
+                        throw new Error(res);
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        subTotal.innerText = "₹ " + data.newTotalPrice;
+                        grandTotal.innerText = "₹ " + data.newTotalPrice;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("An error occured.");
+                })
+            }
+
+            if (e.target.classList.contains('qty-input')) {
+                // Select the text of input boxes if clicked on
+                // for convenience
+                e.target.select();
+            }
+        })
+
+        const grandTotal = document.getElementById('grandTotal');
+        const subTotal = document.getElementById('subTotal');
+
+        const qtyInputs = document.querySelectorAll(".qty-input");
+        qtyInputs.forEach(input=>{
+            input.addEventListener('input', (e) =>{
+                const currentValue = Number(e.target.value);
+                const maxValue = Number(e.target.max);
+                const minValue = Number(e.target.min);
+                const productId = e.target.dataset.id;
+                const productPrice = Number(e.target.dataset.price);
+                const priceValue = document.getElementById(productId + '-total');
+
+                if (currentValue < minValue) {
+                    e.target.value = minValue;
+                    alert("Atleast add one quantity");
+                } else if (currentValue > maxValue) {
+                    e.target.value = maxValue;
+                    alert("Only 5 quantity allowed for each order");
+                } else {
+
+                    // fetch backend
+                    // get new Price
+                    fetch(`/cart/${productId}`,{
+                        method:'PUT',
+                        headers:{'content-type':'application/json'},
+                        body: JSON.stringify({
+                            qty:currentValue
+                        })
+                    }).then(res=>res.json())
+                    .then(data=>{
+                        if(data.success){
+                            priceValue.innerText = "₹ " + data.newPrice;
+                            subTotal.innerText = "₹ " + data.newTotalPrice;
+                            grandTotal.innerText = "₹ " + data.newTotalPrice;
+                        } else {
+                            if (data.error === "Out of Stock") {
+                                priceValue.innerText =  "₹ " + data.stock * Number(productPrice);
+                            }
+                            alert(data.error);
+                            e.target.value = minValue;
+                        }
+                    }).catch(err => alert(err.message))
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>

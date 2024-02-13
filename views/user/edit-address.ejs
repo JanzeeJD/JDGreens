@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Basic -->
+
+<%- include('partials/_head', { title: "Edit Address" }) %>
+
+<body>
+    <%- include('partials/_pre-header') %>
+    <%- include('partials/_header', { active: 'edit-address' }) %>
+
+    <!-- Start All Title Box -->
+    <div class="all-title-box">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h2>Edit Address</h2>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">User</a></li>
+                        <li class="breadcrumb-item active">Address</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End All Title Box -->
+
+    <!-- Start Cart  -->
+    <div class="cart-box-main">
+        <div class="container">
+          
+            <div class="row">
+                <div class="col-sm-6 col-lg-6 mb-3">
+                    <div class="checkout-address">
+                        <div class="title-left">
+                            <h3>Edit Address</h3>
+                        </div>
+                        <form class="needs-validation" method="POST" action="/user/address/edit/<%= locals.address._id %>">
+                            <div class="mb-3">
+                                <label for="houseName">House Name *</label>
+                                <div class="input-group">
+                                    <input name="houseName" type="text" class="form-control" id="houseName" placeholder="" value="<%= locals.address.houseName %>" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="street">Street *</label>
+                                    <input name="street" type="text" class="form-control" id="street" placeholder="" value="<%= locals.address.street %>" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="city">City *</label>
+                                    <input name="city" type="text" class="form-control" id="city" placeholder="" value="<%= locals.address.city %>" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="state">State *</label>
+                                    <input name="state" type="text" class="form-control" id="state" placeholder="" value="<%= locals.address.state %>" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="pin">Pin *</label>
+                                    <input name="pin" type="text" class="form-control" id="pin" placeholder="" value="<%= locals.address.pin %>" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="mobile">Mobile *</label>
+                                <div class="input-group "> <!-- was-validated -->
+                                    <input name="mobile" type="text" class="form-control" id="mobile" value="<%= locals.address.mobile %>" required>
+                                    <div class="invalid-feedback" style="width: 100%;"> Your username is required. </div>
+                                </div>
+                            </div>
+                            <button class="ml-auto btn hvr-hover text-white">Edit Address</button>
+                            <hr class="mb-4">
+                            <p style="color: red; font-weight: bold;"><%= locals.error %></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Cart -->
+
+    <%- include('partials/_insta') %>
+    <%- include('partials/_footer') %>
+    
+    <%- include('partials/_scripts') %>
+    <!-- ALL PLUGINS -->
+    <script src="/js/jquery.superslides.min.js"></script>
+    <script src="/js/bootstrap-select.js"></script>
+    <script src="/js/inewsticker.js"></script>
+    <script src="/js/bootsnav.js."></script>
+    <script src="/js/images-loded.min.js"></script>
+    <script src="/js/isotope.min.js"></script>
+    <script src="/js/owl.carousel.min.js"></script>
+    <script src="/js/baguetteBox.min.js"></script>
+    <script src="/js/form-validator.min.js"></script>
+    <script src="/js/contact-form-script.js"></script>
+    <script src="/js/custom.js"></script>
+</body>
+
+</html>

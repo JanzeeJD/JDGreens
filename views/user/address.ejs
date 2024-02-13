@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Basic -->
+
+<%- include('partials/_head', { title: "Orders" }) %>
+
+<body>
+    <%- include('partials/_pre-header') %>
+    <%- include('partials/_header', { active: 'order' }) %>
+
+    <!-- Start All Title Box -->
+    <div class="all-title-box">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h2>Orders</h2>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">User</a></li>
+                        <li class="breadcrumb-item active">Orders</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End All Title Box -->
+
+    <!-- Start Cart  -->
+    <div class="cart-box-main">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="table-main table-responsive">
+                        <table class="table" id="addressTable">
+                            <thead>
+                                <tr>
+                                    <th>House Name</th>
+                                    <th>Street</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Pin</th>
+                                    <th>Mobile</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (locals.user.address) { %>
+                                    <% locals.user.address.forEach(address => { %>
+                                        <tr id="<%= address._id %>-row">
+                                            <td><%= address.houseName %></td>
+                                            <td><%= address.street %></td>
+                                            <td><%= address.city %></td>
+                                            <td><%= address.state %></td>
+                                            <td><%= address.pin %></td>
+                                            <td><%= address.mobile %></td>
+                                            <td>
+                                                <a href="/user/address/edit/<%= address._id %>"><i style="cursor: pointer" class="fas fa-pen mx-2"></i></a> 
+                                                <i style="cursor: pointer" class="fas fa-times remove-address" data-id="<%= address._id %>"></i>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/_insta') %>
+    <%- include('partials/_footer') %>
+    
+    <%- include('partials/_scripts') %>
+    <!-- ALL PLUGINS -->
+    <script src="/js/jquery.superslides.min.js"></script>
+    <script src="/js/bootstrap-select.js"></script>
+    <script src="/js/inewsticker.js"></script>
+    <script src="/js/bootsnav.js."></script>
+    <script src="/js/images-loded.min.js"></script>
+    <script src="/js/isotope.min.js"></script>
+    <script src="/js/owl.carousel.min.js"></script>
+    <script src="/js/baguetteBox.min.js"></script>
+    <script src="/js/form-validator.min.js"></script>
+    <script src="/js/contact-form-script.js"></script>
+    <script src="/js/custom.js"></script>
+    <script>
+        // Click event is delegated
+        const addressTable = document.getElementById('addressTable');
+        addressTable.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-address')) {
+                const addressId = e.target.dataset.id;
+                const addressRow = document.getElementById(addressId + '-row');
+
+                fetch(`/user/address/${addressId}`,{
+                        method:'DELETE',
+                }).then(res => {
+                    if (res.ok) {
+                        addressRow.remove();
+                        return res.json();
+                    } else {
+                        throw new Error(res);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("An error occured.");
+                })
+            }
+        })
+    </script>
+</body>
+
+</html>

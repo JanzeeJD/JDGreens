@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Basic -->
+
 
 <%- include('partials/_head', { title: "Shop" }) %>
 
@@ -35,14 +35,13 @@
                                 <div class="toolbar-sorter-right">
                                     <span>Sort by </span>
                                     <select id="basic" class="selectpicker show-tick form-control" data-placeholder="$ USD">
-									<option data-display="Select">Nothing</option>
-									<option value="1">Popularity</option>
-									<option value="2">High Price → High Price</option>
-									<option value="3">Low Price → High Price</option>
-									<option value="4">Best Selling</option>
-								</select>
+                                        <option value="na" >Nothing</option>
+                                        <!-- <option value="1">Popularity</option> -->
+                                        <option <%= locals.searchParams.get('sort_by') === 'highToLow' && "selected" %> value="highToLow">High Price → Low Price</option>
+                                        <option <%= locals.searchParams.get('sort_by') === 'lowToHigh' && "selected" %> value="lowToHigh">Low Price → High Price</option>
+								    </select>
                                 </div>
-                                <p>Showing all 4 results</p>
+                                <p>Showing all <%= locals.products.length %> results</p>
                             </div>
                             <div class="col-12 col-sm-4 text-center text-sm-right">
                                 <ul class="nav nav-tabs ml-auto">
@@ -73,13 +72,13 @@
                                                                 <li><a href="/shop/<%= product._id %>" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
                                                                 <li><a href="/wishlist" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
                                                             </ul>
-                                                            <a class="cart" href="/cart">Add to Cart</a>
+                                                            <a class="cart" href="/cart">Buy Now</a>
                                                         </div>
                                                     </div>
                                                     <div class="why-text">
                                                         <h4><%= product.name %></h4>
                                                         <h5>₹ <%= product.price %></h5>
-
+                                                     
                                                     </div>
                                                 </div>
                                             </div>
@@ -94,8 +93,8 @@
 				<div class="col-xl-3 col-lg-3 col-sm-12 col-xs-12 sidebar-shop-left">
                     <div class="product-categori">
                         <div class="search-product">
-                            <form action="#">
-                                <input class="form-control" placeholder="Search here..." type="text">
+                            <form action="/shop" method="GET">
+                                <input class="form-control" placeholder="Search here..." name="search" type="text">
                                 <button type="submit"> <i class="fa fa-search"></i> </button>
                             </form>
                         </div>
@@ -105,7 +104,7 @@
                             </div>
                             <div class="list-group list-group-collapse list-group-sm list-group-tree" id="list-group-men" data-children=".sub-men">
                                 <% locals.categories.forEach(category => { %>
-                                    <a href="#" class="list-group-item list-group-item-action"> <%= category.name %>  <small class="text-muted">(0) </small></a>
+                                    <a href="/shop?category=<%= category._id %>" class="list-group-item list-group-item-action"> <%= category.name %>  <small class="text-muted">(0) </small></a>
                                 <% }) %>
                             </div>
                         </div>
@@ -114,10 +113,10 @@
                                 <h3>Price</h3>
                             </div>
                             <div class="price-box-slider">
-                                <div id="slider-range"></div>
+                                <div id="slider-range" data-min="<%= locals.searchParams.get('min') ?? '0' %>" data-max="<%= locals.searchParams.get('max') ?? '4000' %>"></div>
                                 <p>
-                                    <input type="text" id="amount" readonly style="border:0; color:#fbb714; font-weight:bold;">
-                                    <button class="btn hvr-hover" type="submit">Filter</button>
+                                    <input type="text" id="amount" readonly style="border:0; color:#149253; font-weight:bold;">
+                                    <a id="priceFilterButton" href="/shop?min=0&max=4000" class="btn hvr-hover text-white" type="submit">Filter</a>
                                 </p>
                             </div>
                         </div>
@@ -126,6 +125,8 @@
             </div>
         </div>
     </div>
+    <%- include('partials/pagination', { currentPage: locals.currentPage, totalPages: locals.totalPages }) %>
+
     <!-- End Shop Page -->
 
     <%- include('partials/_insta') %>
@@ -146,6 +147,14 @@
     <script src="/js/form-validator.min.js"></script>
     <script src="/js/contact-form-script.js"></script>
     <script src="/js/custom.js"></script>
+    <script>
+        const sortSelector = document.getElementById('basic');
+        sortSelector.addEventListener('change', (e) => {
+            const query = new URLSearchParams(window.location.search);
+            query.set('sort_by', e.target.value);
+            window.location.search = query.toString();
+        })
+    </script>
 </body>
 
 </html>

@@ -18,7 +18,7 @@
                         <div class="col-md-12">
                             <h1 class="m-b-20"><strong>Explore Nature's Palette <br> with JDGreens</strong></h1>
                             <p class="m-b-40">Transform your space with our exquisite collection of plants. Experience the beauty of nature at your fingertips.</p>
-                            <p><a class="btn hvr-hover" href="#">Shop Now</a></p>
+                            <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
                         </div>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
                         <div class="col-md-12">
                             <h1 class="m-b-20"><strong>Breathe Life Into Your Home <br> with JDGreens</strong></h1>
                             <p class="m-b-40">Immerse yourself in the freshness of our plants. Elevate your living spaces and bring nature indoors.</p>
-                            <p><a class="btn hvr-hover" href="#">Shop Now</a></p>
+                            <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
                         </div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                         <div class="col-md-12">
                             <h1 class="m-b-20"><strong>Green Dreams, Vibrant Reality <br> at JDGreens</strong></h1>
                             <p class="m-b-40">Turn your gardening dreams into reality with JDgreenz. Discover a world of lush greenery and plant happiness.</p>
-                            <p><a class="btn hvr-hover" href="#">Shop Now</a></p>
+                            <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
                         </div>
                     </div>
                 </div>
@@ -134,11 +134,10 @@
                                 <img style="aspect-ratio: 1/1" src="/uploads/products/<%= product.images[0] %>" class="img-fluid" alt="Image">
                                 <div class="mask-icon">
                                     <ul>
-                                        <li><a href="#" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
-                                        <li><a href="#" data-toggle="tooltip" data-placement="right" title="Compare"><i class="fas fa-sync-alt"></i></a></li>
+                                        <li><a href="/shop/<%= product._id %>" data-toggle="tooltip" data-placement="right" title="View"><i class="fas fa-eye"></i></a></li>
                                         <li><a href="#" data-toggle="tooltip" data-placement="right" title="Add to Wishlist"><i class="far fa-heart"></i></a></li>
                                     </ul>
-                                    <a class="cart" href="#">Add to Cart</a>
+                                    <a class="cart" href="/shop">Shop now</a>
                                 </div>
                             </div>
                             <div class="why-text">

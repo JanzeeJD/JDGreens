@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('partials/_head.ejs') %>
+<body class="g-sidenav-show  bg-gray-200">
+  <%- include('partials/_navbar.ejs') %>
+    <%- include('partials/_asidebar.ejs') %>
+      <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+        <div class="container-fluid py-4">
+          <div class="row">
+            <div class="col-12">
+              <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                  <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">Order Details</h6>
+                  </div>
+                </div>
+                <div class="card-body px-4 pb-2">
+                  <div class="order-info">
+                    <p><strong>Order ID:</strong> <%= locals.order._id %></p>
+                    <p><strong>Payment Method:</strong> <%= locals.order.paymentMethod %></p>
+                    <p><strong>Order Status:</strong> <span id="orderStatusText"><%= locals.order.status %></span></p>
+                    <p><strong>Total Price:</strong> $<%= locals.order.total %></p>
+                    <button id="cancelOrderBtn" data-id="<%= order._id %>">Cancel Order</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                  <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">Shipping Address</h6>
+                  </div>
+                </div>
+                <div class="card-body px-4 pb-2">
+                  <div class="shipping-info">
+                    <p><strong>House Name:</strong> <%= locals.order.address.houseName %></p>
+                    <p><strong>Mobile:</strong> <%= locals.order.address.mobile %></p>
+                    <p><strong>Street:</strong> <%= locals.order.address.street %></p>
+                    <p><strong>City:</strong> <%= locals.order.address.city %></p>
+                    <p><strong>State:</strong> <%= locals.order.address.state %></p>
+                    <p><strong>Pin:</strong> <%= locals.order.address.pin %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                  <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">Order Items</h6>
+                  </div>
+                </div>
+                <div class="card-body px-4 pb-2">
+                  <table id="orderItemsTable">
+                    <thead>
+                      <tr>
+                        <th class="text-center">Product</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-center">Price</th>
+                        <th class="text-center">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% locals.order.items.forEach(item => { %>                       
+                        <tr>
+                          <td class="text-center"><%= item.productId %></td>
+                          <td class="text-center"><%= item.quantity %></td>
+                          <td class="text-center">$<%= item.price %></td>
+                          <td class="text-center">$<%= item.quantity * item.price %></td>
+                        </tr>
+                      <% }) %>
+                    
+                    </tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <%- include('partials/_footer.ejs') %>
+          </div>
+      </main>
+      <%- include('partials/_scripts.ejs') %>
+      <script>
+        const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+        cancelOrderBtn.addEventListener('click', (e) => {
+          
+          fetch(`/admin/users/orders/${e.target.dataset.id}`, {
+            method: "PATCH",
+            headers: {
+              "content-type": "application/json"
+            },
+            body: JSON.stringify({
+              status: "Cancelled",
+              isCancelled: true
+            })
+          }).then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              document.getElementById('orderStatusText').innerText = "Cancelled";
+              alert("Order Cancelled");
+            } else {
+              alert("An error occured.");
+              console.error(data);
+            }
+          })
+          .catch(alert);
+        })
+      </script>
+</body>
+
+</html>

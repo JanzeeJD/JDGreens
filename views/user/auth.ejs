@@ -345,7 +345,7 @@
 				<!-- <span>or use your account</span> -->
 				<input name="email" type="email" placeholder="Email" required/>
 				<input name="password" type="password" placeholder="Password" required/>
-				<a href="#">Forgot your password?</a>
+				<a id="forget-password-link" href="/forgot-otp" style="cursor: pointer;">Forgot your password?</a>
 				<p class="error-message" id="loginError"><%= locals.loginError %></p>
 				<p class="welcome-message"><%= locals.welcomeMessage %></p>
 				<button type="submit">Sign In</button>
@@ -368,6 +368,8 @@
 	</div>
 
 	<script>
+
+
 		function isValidEmail(email) {
 			const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 			return emailRegex.test(email);
@@ -411,6 +413,7 @@
 		const registerErrorMessage = document.getElementById("signupError");
 		const loginErrorMessage = document.getElementById("loginError");
 
+
 		registerForm.addEventListener("submit",(event)=>{
 			event.preventDefault();
 
@@ -441,6 +444,34 @@
 
 			registerForm.submit();
 		});
+
+		const forgetPasswordLink = document.getElementById("forget-password-link");
+		forgetPasswordLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			const email = loginForm.email.value.trim();
+
+			loginForm.email.classList.remove('error-outline');
+			loginErrorMessage.innerText = '';
+			if(!email || !isValidEmail(email)){
+				loginForm.email.classList.add('error-outline')
+				loginErrorMessage.innerText = "Enter a valid email to send forget OTP."
+				return
+			}
+			fetch("/forgot-password", { 
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+				},
+				body: JSON.stringify({
+					email
+				})
+			})
+			.then(res => {
+				alert("Check your email.");
+			})
+			.catch(alert);
+		});
+
 
 		loginForm.addEventListener("submit",(event)=>{
 			event.preventDefault();
