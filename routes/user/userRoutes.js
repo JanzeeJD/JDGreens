@@ -1,4 +1,5 @@
 import {Router} from 'express';
+import { isLoggedIn } from '../../middlewares/authMiddleware.js';
 import {  GetShopPage, 
   GetCheckoutPage, 
   GetProfilePage,
@@ -13,19 +14,22 @@ import {  GetShopPage,
   AddAddressPost,
   PlaceOrderFromCheckoutPost,
   PatchOrderDetailPage,
-  PostChangePasswordLoggedIn
+  PostChangePasswordLoggedIn,
+  PlaceOrderForPayment,
+  GetWalletPage
 }from '../../controllers/user/userController.js';
 
 const router = Router();
 
 // todo: need a route to render my-account.ejs, / route
 
+router.post('/payment', PlaceOrderForPayment)
+
 router.get('/checkout',GetCheckoutPage)
 router.post('/checkout', PlaceOrderFromCheckoutPost)
-
 router.get('/my-account',GetAccountPage)
 router.get('/profile',GetProfilePage)
-router.post('/profile/change-password',PostChangePasswordLoggedIn);
+router.post('/profile/change-password', isLoggedIn, PostChangePasswordLoggedIn);
 
 router.get('/address',GetAddressPage);
 router.delete('/address/:addressId', DeleteAddress);
@@ -39,6 +43,8 @@ router.post('/address/edit/:addressId',EditAddressPost)
 router.get('/orders',GetOrdersPage)
 router.get('/orders/:orderId',GetOrderDetailPage)
 router.patch('/orders/:orderId',PatchOrderDetailPage)
+
+router.get("/wallet", GetWalletPage);
 
 export default router;
 
