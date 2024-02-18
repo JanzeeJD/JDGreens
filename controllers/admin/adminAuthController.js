@@ -3,6 +3,7 @@
 import User from "../../models/User.js";
 import Category from "../../models/Category.js";
 import express from 'express';
+import { generateStatistics } from "./adminSalesController.js";
 
 /**
  * **Route:** GET /admin
@@ -57,7 +58,8 @@ export async function PostAdminLogin(req, res) {
  * @param {express.Response} res
  */
 export async function GetAdminDashboard(req, res) {
-  res.render("admin/dashboard");
+  const stats = await generateStatistics();
+  res.render("admin/dashboard", { stats });
 }
 
 /**

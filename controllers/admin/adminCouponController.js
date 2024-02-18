@@ -111,8 +111,13 @@ export async function PostAddCoupon(req, res) {
     return;
   }
 
+  const couponObject = { name, code, discountType, discountValue };
+  if (usageLimit && !isNaN(usageLimit) && usageLimit > 0) {
+      couponObject.usageLimit = usageLimit;
+  }
+
   // If no coupon with the same name exists, create a new coupon
-  const coupon = await Coupon.create({ name, code, discountType, discountValue  });
+  const coupon = await Coupon.create(couponObject);
 
   res.redirect('/admin/coupon');
 }
