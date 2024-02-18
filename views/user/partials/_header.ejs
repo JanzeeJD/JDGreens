@@ -36,9 +36,16 @@
         </a>
     <ul class="dropdown-menu dropdown-menu-right">
                 <li><a href="/user/my-account">My Account</a></li>
+                <li><a href="/wishlist">Wishlist</a></li>
                 <li><a href="/cart">Cart</a></li>
                 <li><a href="/user/orders">Orders</a></li>
-               
+                <li>
+                    <% if (locals.loggedIn) { %>
+                         <a style="color: white;" href="/logout">Logout</a>
+                     <% } else { %>
+                         <a style="color: white;" href="/login">Login</a>
+                     <% } %>
+                </li>
                 
                 </ul>
               </li>
