@@ -57,11 +57,9 @@ export async function GetShopPage(req, res) {
     query.price = { $gt: minnyMol, $lt: maxyMon }
   }
 
-  console.log(query);
-
   try {
     const page = Number(req.query.page) || 1;
-    const limit = 3;
+    const limit = 6;
 
     const paginatedProducts = await Product.paginate(query, {
       sort: sort,
