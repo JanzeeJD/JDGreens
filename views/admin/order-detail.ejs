@@ -18,7 +18,16 @@
                   <div class="order-info">
                     <p><strong>Order ID:</strong> <%= locals.order._id %></p>
                     <p><strong>Payment Method:</strong> <%= locals.order.paymentMethod %></p>
-                    <p><strong>Order Status:</strong> <span id="orderStatusText"><%= locals.order.status %></span></p>
+                    <p>
+                      <strong>Order Status:</strong>
+                      <select id="orderStatusDropdown" data-order-id="<%= order._id %>">
+                        <option value="pending" selected="<%= locals.order.status === 'pending' %>">Pending</option>
+                        <option value="confirmed" selected="<%= locals.order.status === 'confirmed' %>">Confirmed</option>
+                        <option value="cancelled" selected="<%= locals.order.status === 'cancelled' %>">Cancelled</option>
+                        <option value="delivered" selected="<%= locals.order.status === 'delivered' %>">Delivered</option>
+                        <option value="returned" selected="<%= locals.order.status === 'returned' %>">Returned</option>
+                      </select>
+                    </p>
                     <p><strong>Total Price:</strong> $<%= locals.order.total %></p>
                     <button id="cancelOrderBtn" data-id="<%= order._id %>">Cancel Order</button>
                   </div>

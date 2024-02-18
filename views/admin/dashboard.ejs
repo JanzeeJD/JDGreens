@@ -137,7 +137,7 @@
       </div>
     </nav>
     <!-- End Navbar -->
-    <!-- <div class="container-fluid py-4">
+    <div class="container-fluid py-4">
       <div class="row">
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
           <div class="card">
@@ -147,8 +147,8 @@
                 <i class="material-icons opacity-10">weekend</i>
               </div>
               <div class="text-end pt-1">
-                <p class="text-sm mb-0 text-capitalize">Today's Money</p>
-                <h4 class="mb-0">$53k</h4>
+                <p class="text-sm mb-0 text-capitalize">Number of Orders</p>
+                <h4 class="mb-0"><%= locals.stats.NoOfOrders %></h4>
               </div>
             </div>
             <hr class="dark horizontal my-0">
@@ -165,8 +165,8 @@
                 <i class="material-icons opacity-10">person</i>
               </div>
               <div class="text-end pt-1">
-                <p class="text-sm mb-0 text-capitalize">Today's Users</p>
-                <h4 class="mb-0">2,300</h4>
+                <p class="text-sm mb-0 text-capitalize">Number Of Products</p>
+                <h4 class="mb-0"><%= locals.stats.NoOfProducts %></h4>
               </div>
             </div>
             <hr class="dark horizontal my-0">
@@ -183,8 +183,8 @@
                 <i class="material-icons opacity-10">person</i>
               </div>
               <div class="text-end pt-1">
-                <p class="text-sm mb-0 text-capitalize">New Clients</p>
-                <h4 class="mb-0">3,462</h4>
+                <p class="text-sm mb-0 text-capitalize">Total Income</p>
+                <h4 class="mb-0">$ <%= locals.stats.TotalAmountPayable %></h4>
               </div>
             </div>
             <hr class="dark horizontal my-0">
@@ -201,8 +201,8 @@
                 <i class="material-icons opacity-10">weekend</i>
               </div>
               <div class="text-end pt-1">
-                <p class="text-sm mb-0 text-capitalize">Sales</p>
-                <h4 class="mb-0">$103,430</h4>
+                <p class="text-sm mb-0 text-capitalize">Total Discount</p>
+                <h4 class="mb-0">$ <%= locals.stats.TotalDiscount %></h4>
               </div>
             </div>
             <hr class="dark horizontal my-0">
@@ -213,8 +213,9 @@
         </div>
       </div>
 
+      <button id="generateSalesReportButton">Generate Sales Report</button>
     </div>
-    </div> -->
+    </div>
   </main>
   <div class="fixed-plugin">
     <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
@@ -307,6 +308,64 @@
   <script src="/admin/js/plugins/smooth-scrollbar.min.js"></script>
   <script src="/admin/js/plugins/chartjs.min.js"></script>
   <script>
+    
+    const generateSalesReportButton = document.getElementById('generateSalesReportButton');
+
+    generateSalesReportButton.addEventListener('click', async () => {
+          const { value: formValues } = await Swal.fire({
+            title: "Multiple inputs",
+            html: `
+              <input required type="date" id="startingDate" name="startingDate" style="display:inline;" class="swal2-input">
+              <input required type="date" id="endingDate" name="endingDate" style="display:inline;" class="swal2-input">
+            `,
+            focusConfirm: false,
+            preConfirm: () => {
+              return [
+                document.getElementById("startingDate").value,
+                document.getElementById("endingDate").value
+              ];
+          }
+        });
+
+        if (formValues[0] && formValues[1]) {
+          downloadSalesReport('pdf', formValues[0], formValues[1]);
+        } else {
+          Swal.fire("Give proper dates!");
+        }
+    });
+
+    function downloadSalesReport(format, startingDate, endingDate) {
+
+      // Adjust the fetch URL to include the desired format
+      const fetchUrl = `/admin/reports/${format}`;
+
+      fetch(fetchUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ startingDate, endingDate }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.blob(); // Use blob() to get the response as a Blob
+        })
+        .then(blob => {
+          // Create a blob URL and open it in a new tab
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        })
+        .catch(error => {
+          console.error('Fetch error of sales report:', error);
+          // Handle errors if necessary
+          Swal.fire('NO ORDERS!', 'There is no orders in that date', 'error');
+        });
+      }
+
+    
+
     var ctx = document.getElementById("chart-bars").getContext("2d");
 
     new Chart(ctx, {
