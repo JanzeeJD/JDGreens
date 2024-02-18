@@ -3,12 +3,18 @@ import mongoose, { Schema } from 'mongoose';
 const OrderSchema = new mongoose.Schema({
         user: {
             type: Schema.Types.ObjectId,
-            required: true
+            required: true,
+            ref: 'User'
         },
         status: {
             type: String,
             required: true,
             enum: ['Confirmed', 'Pending', 'Delivered', 'Returned', 'Cancelled']
+        },
+        discountAmount: {
+            type: Number,
+            required: true,
+            default: 0
         },
         address: {
             houseName: {
@@ -41,6 +47,10 @@ const OrderSchema = new mongoose.Schema({
                 type: Schema.Types.ObjectId,
                 required: true
             },
+            productName:{
+                type : String,
+                required:true
+            },
             price: {
                 type: Number,
                 required: true
@@ -69,7 +79,7 @@ const OrderSchema = new mongoose.Schema({
         paymentMethod: {
             type: String,
             required: true,
-            enum: ['Net Banking', 'COD', 'WALLET']
+            enum: ['upi', 'cod', 'wallet']
         },
         shippingOption: {
             type: String,
@@ -89,6 +99,10 @@ const OrderSchema = new mongoose.Schema({
             type: Boolean,
             required: true,
             default: false
+        },
+        paymentId: {
+            type: String,
+            required: false
         }
     },
     {

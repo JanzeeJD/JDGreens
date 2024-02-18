@@ -26,6 +26,16 @@ const UserSchema = new mongoose.Schema({
     required: true,
     default: false
   },
+  wallet:{
+    type:Number,
+    default:0,
+    required:true
+  },
+  walletTransactions: [{
+    createdAt: { type: Date, default: Date.now },
+    amount: { type: Number },
+    type: { type: String }
+  }],
   wishlist:[{
     type:mongoose.Schema.ObjectId,
     ref: "Product"

@@ -15,12 +15,14 @@ import homeRoutes from './routes/user/homeRoutes.js';
 import userRoutes from './routes/user/userRoutes.js';
 import shopRoutes from './routes/user/shopRoutes.js';
 import cartRoutes from './routes/user/cartRoute.js';
+import paymentRoute from './routes/user/paymentRoute.js'
 import adminAuthRoutes from './routes/admin/adminAuthRoutes.js'
 import adminUserRoutes from './routes/admin/adminUserRoutes.js'
 import adminProductRoutes from './routes/admin/adminProductRoutes.js'
 import adminCategoryRoutes from './routes/admin/adminCategoryRoutes.js'
 import adminCouponRoutes from './routes/admin/adminCouponRoutes.js'
-import { applyLocals } from './middlewares/authMiddleware.js';
+import adminSalesRoutes from './routes/admin/adminSalesRoutes.js'
+import { applyLocals, isLoggedIn } from './middlewares/authMiddleware.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -75,14 +77,24 @@ app.use('/', homeRoutes);
 app.use('/', shopRoutes);
 app.use('/',cartRoutes);
 app.use('/user', userRoutes);
+// app.use('/',paymentRoute)
+
 
 app.use('/admin', adminAuthRoutes);
 app.use('/admin/users', adminUserRoutes);
 app.use('/admin/product', adminProductRoutes);
 app.use('/admin/category', adminCategoryRoutes);
 app.use('/admin/coupon', adminCouponRoutes);
+app.use("/admin/reports", adminSalesRoutes);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(500).send('Something broke!');
+  // process.exit(1); // server will shut down on catastrophic errors
+})
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
+
   console.log(`🔥 Server started listening on http://localhost:${port}`);
 })
