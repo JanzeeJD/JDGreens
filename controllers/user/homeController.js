@@ -61,7 +61,7 @@ export async function PostLogin(req, res) {
 
   } else {
 
-    res.render("user/auth", { error: "Invalid credentials" })
+    res.render("user/auth", { loginError: "Invalid credentials" })
   }
 }
 export async function PostForgotPassword(req, res) {
@@ -71,6 +71,7 @@ export async function PostForgotPassword(req, res) {
   if (!user) {
     console.log("A mandan gave us a wrong email to pattikan")
     res.status(200).send({ message: "Password OTP sent " });
+    return;
     // User is not found but we should not inform the client of that
     // because they can misuse that information
     // https://www.rapid7.com/blog/post/2017/06/15/about-user-enumeration/

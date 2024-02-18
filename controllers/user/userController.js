@@ -7,7 +7,11 @@ import Order from '../../models/Order.js';
 import Coupon from '../../models/Coupon.js';
 import { findTotalPrice } from './cartController.js';
 import bcrypt from 'bcrypt';
+import Razorpay from "razorpay";
+import { config } from 'dotenv';
+config();
 
+var razorPayInstance = new Razorpay({ key_id: process.env.RAZORPAY_ID_KEY, key_secret: process.env.RAZORPAY_SECRET_KEY });
 
 export function GetShopPage(req, res) {
   res.render('user/shop')
@@ -16,13 +20,16 @@ export function GetShopPage(req, res) {
 export async function GetCheckoutPage(req, res) {
   const { userId } = req.session;
 
-  const userAddress = await User.findOne({ _id: userId }, { address: 1 });
-  const addresses = userAddress.address;
+  const user = await User.findById(userId);
+  const addresses = user.address;
+  const wallet = user.wallet;
 
   // todo: only fetch coupons which didnt expire
-  const coupons = await Coupon.find({ 
-    usageLimit: { $gt: 0 },
-    // usedBy: { $not: { $in: [userId] } }
+  const coupons = await Coupon.find({
+    $or: [
+      { usageLimit: { $exists: false } },
+      { usageLimit: { $gt: 0 } }
+    ]
   });
 
   const ourCart = await Cart.findOne({ user: userId });
@@ -31,9 +38,64 @@ export async function GetCheckoutPage(req, res) {
     res.redirect('/cart');
     return;
   }
-  res.render('user/checkout', { cart: ourCart, coupons, addresses, totalPrice })
+  res.render('user/checkout', { cart: ourCart, coupons, addresses, wallet, totalPrice })
 }
 
+export async function PlaceOrderForPayment(req, res) {
+  const { userId } = req.session;
+  const { addressOption, shippingOption, paymentOption, couponCode } = req.body;
+
+  const user = await User.findOne({ _id: userId });
+  const ourCart = await Cart.findOne({ user: userId });
+  let totalPrice = findTotalPrice(ourCart);
+  if (shippingOption === '50') {
+    totalPrice += 50;
+  } else if (shippingOption === '100') {
+    totalPrice += 100;
+  }
+  const coupon = await Coupon.findOne({ code: couponCode });
+  if (coupon) {
+    if (coupon.discountType === 'FLAT') {
+      totalPrice -= coupon.discountValue;
+    } else if (coupon.discountType === 'PERCENTAGE') {
+      totalPrice -= (totalPrice * coupon.discountValue) / 100;
+    }
+  }
+
+  try {
+    var options = {
+      amount: totalPrice * 100, // Convert amount to the smallest currency unit (e.g., paise in INR)
+      currency: "INR",
+      receipt: "order_rcptid_11",
+    };
+
+    // Creating the order
+    console.log("[razorpay] creating order for Rs. " + options.amount.toString());
+    razorPayInstance.orders.create(options, function (err, order) {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error creating order");
+        return;
+      }
+      // console.log("order is",order);``
+      // Add orderprice to the response object
+      console.log("[razorpay] order created");
+      req.session.awaitingPayment = true;
+      req.session.orderId = order.id;
+      const _user = {
+        name: user.name,
+        email: user.email
+      }
+      res.status(201).send({ orderId: order.id, user: _user, amount: options.amount });
+      // Replace razorpayOrderId and razorpayPaymentId with actual values
+      // Redirect to /orderdata on successful payment
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+
+}
 
 export async function PlaceOrderFromCheckoutPost(req, res) {
   const { userId } = req.session;
@@ -55,29 +117,72 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
     totalPrice += 100;
   }
 
-  // todo: make it dynamic to support cards and UPI
-  newOrder.paymentMethod = "COD";
-  newOrder.status = "Confirmed";
-  newOrder.total = totalPrice;
-
   /* Apply coupon, if any... */
+  console.log(couponCode, "was used as a coupon code.")
   const coupon = await Coupon.findOne({ code: couponCode });
+  console.log(coupon ? "Coupon was found" : "Coupon was not found.")
   if (coupon) {
     // todo: Check if cuopon is valid, not used before.
     if (coupon.discountType === 'FLAT') {
+      newOrder.discountAmount = coupon.discountValue;
       newOrder.amountPayable = totalPrice - coupon.discountValue;
     } else if (coupon.discountType === 'PERCENTAGE') {
-      newOrder.amountPayable = totalPrice - (totalPrice * coupon.discountValue) / 100;
+      newOrder.discountAmount = (totalPrice * coupon.discountValue) / 100;
+      newOrder.amountPayable = totalPrice - newOrder.discountAmount;
     } else {
+      newOrder.discountAmount = 0;
       newOrder.amountPayable = totalPrice;
     }
-    
+
     coupon.usedBy.push(userId);
-    coupon.usageLimit--;
+    coupon.usageLimit && coupon.usageLimit--;
     await coupon.save();
   } else {
     newOrder.amountPayable = totalPrice;
   }
+
+  newOrder.status = "Confirmed";
+
+  newOrder.paymentMethod = paymentOption.toLowerCase();
+  if (newOrder.paymentMethod === 'upi') {
+    console.log("[razorpay] triggered from placeOrderFromCheckout");
+    console.log("Awaiting Payment: ",req.session.awaitingPayment)
+    console.log("Order ID: ",req.session.orderId)
+    if (req.session.awaitingPayment) {
+      const orderId = req.session.orderId;
+      if (!orderId) {
+        return res.status(500).send({ error: "orderId not found" });
+      }
+
+      try {
+        const order = await razorPayInstance.orders.fetch(orderId);
+        if (order.amount_paid >= order.amount) {
+          newOrder.paymentId = orderId;
+        } else {
+          newOrder.status = "Payment Issue";
+        }
+        req.session.awaitingPayment = false;
+
+      } catch (err) {
+        return res.status(500).send({ error: "order not found. "});
+      }
+    } else {
+      return res.status(500).send({ error: "not awaiting payment" });
+    }
+  } else if (newOrder.paymentMethod === 'wallet') {
+    if (user.wallet < newOrder.amountPayable) {
+      return res.status(400).send({ error: "insufficient fund" });
+    }
+
+    user.wallet -= newOrder.amountPayable;
+    user.walletTransactions.push({
+      createdAt: new Date(),
+      amount: -newOrder.amountPayable,
+      type: "order"
+    });
+  }
+
+  newOrder.total = totalPrice;
 
   const existingAddressIndex = user.address.findIndex((address) => address._id.equals(addressOption));
   if (existingAddressIndex === -1) {
@@ -100,6 +205,7 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
   for (let i = 0; i < ourCart.products.length; i++) {
     newOrder.items.push({
       productId: ourCart.products[i].productId,
+      productName: ourCart.products[i].name,
       quantity: ourCart.products[i].productQty,
       price: ourCart.products[i].price,
     })
@@ -110,7 +216,8 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
 
     ourCart.products = [];
     await ourCart.save();
-  
+    await user.save();
+
     res.redirect(`/user/orders/${order._id}`)
   } catch (err) {
     console.error(err);
@@ -289,9 +396,17 @@ export async function DeleteAddress(req, res) {
 export async function GetOrdersPage(req, res) {
   const { userId } = req.session;
 
-  const userOrders = await Order.find({ user: userId }).sort({createdAt:-1});
+  const userOrders = await Order.find({ user: userId }).sort({ createdAt: -1 });
 
   res.render("user/orders", { userOrders });
+}
+
+export async function GetWalletPage(req, res) {
+  const { userId } = req.session;
+
+  const user = await User.findById(userId);
+
+  res.render("user/wallet", { user });
 }
 
 export async function GetOrderDetailPage(req, res) {
@@ -307,12 +422,22 @@ export async function PatchOrderDetailPage(req, res) {
   const { orderId } = req.params;
   const order = await Order.findById(orderId);
   const { status, isCancelled } = req.body;
+  const user = await User.findById(req.session.userId)
 
   try {
     order.isCancelled = isCancelled;
     order.status = status;
     await order.save();
-  
+    // if order cancelled amount added to wallet
+    if (order.paymentMethod === 'upi' || order.paymentMethod === 'wallet') {
+      user.wallet = user.wallet + order.amountPayable
+      user.walletTransactions.push({
+        createdAt: new Date(),
+        amount: order.amountPayable,
+        type: "refund"
+      });
+    }
+    await user.save();
     res.status(200).json({
       success: true
     })
@@ -327,7 +452,10 @@ export async function PatchOrderDetailPage(req, res) {
 
 export async function PostChangePasswordLoggedIn(req, res) {
   const { oldPassword, newPassword } = req.body;
+
   const user = await User.findById(req.session.userId);
+
+  // todo: Validate the `newPassword` with Regex & Length check
 
   if (await bcrypt.compare(oldPassword, user.password)) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
