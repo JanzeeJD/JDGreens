@@ -26,7 +26,7 @@
 
     <!-- Start Cart  -->
     <div class="cart-box-main">
-        <form class="container" method="POST" action="/user/checkout">
+        <form class="container" id="checkOut" method="POST" action="/user/checkout">
             <div class="row">
                 <div class="col-sm-6 col-lg-6 mb-3">
                     <div class="title-left">
@@ -79,18 +79,18 @@
                     <div class="mb-4">
                         <div>
                             <div class="custom-control custom-radio">
-                                <input value="cod" id="cod" name="paymentOption" class="custom-control-input" checked="checked" type="radio">
+                                <input data-wallet-amount="<%= locals.wallet %>" value="wallet" id="wallet" name="paymentOption" class="custom-control-input" type="radio" <%= locals.wallet < locals.totalPrice && "disabled" %>>
+                                <label class="custom-control-label" for="wallet">Wallet</label> <span class="float-right font-weight-bold"></span> 
+                            </div>
+                            <div id="walletText" class="ml-4 mb-2 small">(₹ <%= locals.wallet %> left in balance)</div>
+                            <div class="custom-control custom-radio">
+                                <input value="cod" id="cod"  name="paymentOption" class="custom-control-input" checked="checked" type="radio">
                                 <label class="custom-control-label" for="cod">Cash on Delivery</label> <span class="float-right font-weight-bold"></span> 
                             </div>
                             <div class="custom-control custom-radio">
-                                <input value="upi" id="upi" name="paymentOption" class="custom-control-input" checked="checked" type="radio">
+                                <input value="upi" id="upi" name="paymentOption" class="custom-control-input" type="radio">
                                 <label class="custom-control-label" for="upi">Net Banking</label> <span class="float-right font-weight-bold"></span> 
-                            </div>
-                            <div class="custom-control custom-radio">
-                                <input value="wallet" id="wallet" name="paymentOption" class="custom-control-input" checked="checked" type="radio">
-                                <label class="custom-control-label" for="wallet">Net Banking</label> <span class="float-right font-weight-bold"></span> 
-                            </div>
-                            <div class="ml-4 mb-2 small">(please keep social distancing)</div>
+                            </div>                       
                         </div>
                     </div>
 
@@ -102,7 +102,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="couponCode">Coupon</label>
-                            <input style="text-transform: uppercase" disabled type="text" class="form-control" id="couponCode" name="couponCode" placeholder="" value="" required>
+                            <input style="text-transform: uppercase" readonly type="text" class="form-control" id="couponCode" name="couponCode" placeholder="" value="" required>
                             <button type="button" id="viewCouponsButton" class="btn btn-secondary btn-hover mt-2">View Coupons</button>
                             <button type="button" id="clearCouponButton" class="btn btn-secondary btn-hover mt-2">Clear Coupon</button>
                         </div>
@@ -170,7 +170,7 @@
                                 </div>
                                 <hr> </div>
                         </div>
-                        <div class="col-12 d-flex shopping-box"> <button class="ml-auto btn hvr-hover text-white" id="placeOrderButton" data-toggle="modal" data-target="#orderPlacedModal">Place Order</button> </div>
+                        <div class="col-12 d-flex shopping-box"> <button class="ml-auto btn hvr-hover text-white" id="placeOrderButton">Place Order</button> </div>
                     <!-- </div> -->
                 <!-- </div> -->
             </div>
@@ -223,7 +223,7 @@
             <% if (locals.coupons && locals.coupons.length > 0) { %>
                 <button id="selectCouponBtn" type="button" class="btn btn-primary">Apply</button>
             <% } %>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button  type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
           </div>
         </div>
@@ -245,7 +245,14 @@
     <script src="/js/form-validator.min.js"></script>
     <script src="/js/contact-form-script.js"></script>
     <script src="/js/custom.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <script>
+        const walletRadioButton = document.getElementById("wallet");
+        const codRadioButton = document.getElementById("cod");
+        const walletAmount = Number(walletRadioButton.dataset.walletAmount);
+        const walletText = document.getElementById("walletText");
+        
         const clearCouponButton = document.getElementById('clearCouponButton');
         clearCouponButton.style.display = 'none';
 
@@ -322,7 +329,19 @@
             console.log(`\t + Coupon Discount of ₹ ${couponDiscount}`);
             grandTotalPrice -= couponDiscount;
             console.log(`= ₹ ${grandTotalPrice}`)
-            grandTotal.innerText = '₹ ' + grandTotalPrice;
+            grandTotal.innerText = '₹' + grandTotalPrice;
+
+            if (grandTotalPrice > walletAmount) {
+                walletRadioButton.disabled = true;
+                walletText.style.color = "red";
+                if (walletRadioButton.checked) {
+                    walletRadioButton.checked = false;
+                    codRadioButton.checked = true;
+                }
+            } else {
+                walletRadioButton.disabled = false;
+                walletText.style.color = "#111";
+            }
         }
     </script>
     <div class="modal fade" id="orderPlacedModal" tabindex="-1" role="dialog" aria-labelledby="orderPlacedModalLabel" aria-hidden="true">
@@ -345,14 +364,100 @@
       </div>
       <script>
         // This script handles the modal display
-        document.getElementById('placeOrderButton').addEventListener('click', function () {
-          $('#orderPlacedModal').modal('show');
-        });
-
         document.getElementById('viewCouponsButton').addEventListener('click', function () {
           $('#couponModal').modal('show');
         });
       </script>
+                 
+    <script>
+        const form = document.getElementById("checkOut")
+
+        // Place Order Form
+        form.addEventListener("submit", (e) => {
+            e.preventDefault()
+            const paymentMode = form.paymentOption.value.toLowerCase();
+
+            if (paymentMode === 'cod' || paymentMode === 'wallet') {
+                document.getElementById('placeOrderButton').addEventListener('click', function () {
+                    $('#orderPlacedModal').modal('show');
+                });
+
+                // Submit the form normally.
+                form.submit();
+                return;
+            }
+
+            const amount = grandTotal.innerText.substring(1);
+
+            // If our payment method is RazorPay, we need some additional considerations.
+            // 1. User may open the RazorPay form and close it.
+            // 2. User may fail at the payment.
+            // 3. and possibly even more potential issues that we cannot predict.
+
+            // We will use a different endpoint and submit the form via AJAX Fetch instead
+
+            // /user/payment instead of /user/checkout
+            const formData = Object.fromEntries(new FormData(form).entries());
+
+            // Fetch the Razorpay order details from your server
+            if (paymentMode == 'upi') {
+                fetch("/user/payment", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                }).then(res => res.json())
+                .then(data => {
+                    const orderId = data.orderId; // RazorPay Generated Order ID
+                    const amount = Number(data.amount);
+                    const user = data.user;
+                    const options = {
+                        key: "rzp_test_ou2EZ6lrd1dFBB",
+                        amount,
+                        currency: "INR",
+                        name: "JDGreens",
+                        description: "Online Payment",
+                        image: "https://example.com/your_logo",
+                        order_id: orderId,
+                        handler: function (response) {
+                            alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
+                            form.submit();
+                        },
+                        prefill: {
+                            name: user.name,
+                            email: user.email,
+                            contact: "9000090000"
+                        },
+                        notes: {
+                            address: "Razorpay Corporate Office",
+                            paymentOption: "ONLINE",
+
+                        },
+                        theme: {
+                            color: "#155717"
+                        }
+                    };
+
+                    const RazorPayInstance = new Razorpay(options);
+
+                    RazorPayInstance.on('payment.failed', (response) => {
+                        alert("Payment Failed - " + response.error.description);
+                        console.error(response.error.code);
+                        console.error(response.error.source);
+                        console.error(response.error.step);
+                        console.error(response.error.reason);
+                        console.error(response.error.metadata.payment_id);
+
+                    })
+
+                    // Open the RazorPay Payment Modal
+                    RazorPayInstance.open();
+                });
+
+            }
+        })
+    </script>
       
 </body>
 

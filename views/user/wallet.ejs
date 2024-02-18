@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Basic -->
+
+<%- include('partials/_head', { title: "Wallet" }) %>
+
+<body>
+    <%- include('partials/_pre-header') %>
+    <%- include('partials/_header', { active: 'wallet' }) %>
+
+    <!-- Start All Title Box -->
+    <div class="all-title-box">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h2>Wallet</h2>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">User</a></li>
+                        <li class="breadcrumb-item active">Wallet</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End All Title Box -->
+
+    <!-- Start Cart  -->
+    <div class="cart-box-main">
+        <div class="container">
+            <h1><strong>Your Wallet:</strong></h1>
+            <h1>₹ <%= locals.user.wallet %></h1>
+            <!-- <button>Add To Wallet</button> -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="table-main table-responsive">
+                        <h2>Transactions</h2>
+                        <table class="table" id="cartTable">
+                            <thead>
+                                <tr>
+                                    <th>Created At</th>
+                                    <th>Amount</th>
+                                    <th>Transaction Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                 <% if (locals.user.walletTransactions) { %>
+                                    <% locals.user.walletTransactions.forEach(transaction => { %>
+                                        <tr>
+                                            <td><%=  transaction.createdAt %></td>
+                                            <td><%=  transaction.amount %></td>
+                                            <td><%=  transaction.type %></td>
+                                        </tr>
+                                    <% }) %>
+                                 <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/_insta') %>
+    <%- include('partials/_footer') %>
+    
+    <%- include('partials/_scripts') %>
+    <!-- ALL PLUGINS -->
+    <script src="/js/jquery.superslides.min.js"></script>
+    <script src="/js/bootstrap-select.js"></script>
+    <script src="/js/inewsticker.js"></script>
+    <script src="/js/bootsnav.js."></script>
+    <script src="/js/images-loded.min.js"></script>
+    <script src="/js/isotope.min.js"></script>
+    <script src="/js/owl.carousel.min.js"></script>
+    <script src="/js/baguetteBox.min.js"></script>
+    <script src="/js/form-validator.min.js"></script>
+    <script src="/js/contact-form-script.js"></script>
+    <script src="/js/custom.js"></script>
+</body>
+
+</html>

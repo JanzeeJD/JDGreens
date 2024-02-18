@@ -34,7 +34,12 @@
                                 </div>
                                 <div class="media mb-2 border-">
                                     <div class="media-body"> <%= locals.userOrder.address.houseName %>, <%= locals.userOrder.address.street %>
-                                        <div class="small text-muted">Pin: <%= locals.userOrder.address.pin %> <span class="mx-2">|</span> </div>
+                                        <div class="small text-muted"> Pin: <%= locals.userOrder.address.pin %>
+                                        <span class="mx-2"><%= locals.userOrder.address.city %>,
+                                        <%= locals.userOrder.address.state %></span>
+                                        
+                                         <div class="small text"> Mobile: <%= locals.userOrder.address.mobile %></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -46,7 +51,7 @@
                                 </div>
                                 <div class="d-flex">
                                     <div class="font-weight-bold">Payment Method</div>
-                                    <div class="ml-auto font-weight-bold">Cash On Delivery</div>
+                                    <div class="ml-auto font-weight-bold"> <%= locals.userOrder.paymentMethod %></div>
                                 </div>
                                 <hr class="my-1">
                                 <div class="d-flex">
@@ -60,7 +65,7 @@
                                 <hr class="my-1">
                                 <div class="d-flex">
                                     <h4>Sub Total</h4>
-                                    <div class="ml-auto font-weight-bold"> $ <%= locals.userOrder.total %> </div>
+                                    <div class="ml-auto font-weight-bold"> ₹ <%= locals.userOrder.total %> </div>
                                 </div>
                                 <!-- <div class="d-flex">
                                     <h4>Discount</h4>
@@ -82,7 +87,7 @@
                                 <hr>
                                 <div class="d-flex gr-total">
                                     <h5>Grand Total</h5>
-                                    <div class="ml-auto h5" id="grandTotal" data-price="<%= locals.userOrder.total %>"> $ <%= locals.userOrder.total %> </div>
+                                    <div class="ml-auto h5" id="grandTotal" data-price="<%= locals.userOrder.total %>"> ₹ <%= locals.userOrder.total %> </div>
                                 </div>
                                 <hr> </div>
                         </div>
@@ -102,7 +107,7 @@
                             <% if (locals.userOrder.items && locals.userOrder.items.length > 0) { %>
                                 <% locals.userOrder.items.forEach(product => { %>                                        
                                     <div class="media mb-2 border-bottom">
-                                        <div class="media-body"> <a href="/shop/<%= product.productId %>"> <%= product.productId %></a>
+                                        <div class="media-body"> <a href="/shop/<%= product.productId %>"> <%= product.productName %></a>
                                             <div class="small text-muted">Price: $<%= product.price %> <span class="mx-2">|</span> Qty: <%= product.quantity %> <span class="mx-2">|</span> Subtotal: <%= product.price * product.productQty %></div>
                                         </div>
                                     </div>

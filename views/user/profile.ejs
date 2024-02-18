@@ -65,18 +65,18 @@
                                 <div class="title-left">
                                     <h3>Change Password</h3>
                                 </div>
-                                <form method="POST" action="/user/password">
+                                <form method="POST" action="/user/password" id="changePasswordForm">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="currentPassword">Current Password</label>
-                                            <input type="text" class="form-control" id="currentPassword" placeholder="" value="" required>
+                                            <label for="oldPassword">Current Password</label>
+                                            <input type="text" class="form-control" name="oldPassword" id="oldPassword" placeholder="" value="" required>
                                             <div class="invalid-feedback"> Valid first name is required. </div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="newPassword">New Password</label>
-                                            <input type="text" class="form-control" id="newPassword" placeholder="" value="" required>
+                                            <input type="text" class="form-control" name="newPassword" id="newPassword" placeholder="" value="" required>
                                             <div class="invalid-feedback"> Valid first name is required. </div>
                                         </div>
                                         <div class="col-md-6 mb-3">
@@ -113,6 +113,28 @@
     <script src="/js/form-validator.min.js"></script>
     <script src="/js/contact-form-script.js"></script>
     <script src="/js/custom.js"></script>
+    <script>
+        document.getElementById('changePasswordForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const data = JSON.stringify({oldPassword: e.target.oldPassword.value, newPassword: e.target.newPassword.value})
+            fetch("/user/profile/change-password", { 
+                method: "POST", // todo: change to PATCH
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: data 
+            }).then(res => {
+                if (!res.ok) {
+                    throw new Error("Invalid credentials");
+                }
+
+                alert("Changed password successfully.");
+
+                e.target.clear();
+            }).catch(alert);
+        });
+    </script>
 </body>
 
 </html>
