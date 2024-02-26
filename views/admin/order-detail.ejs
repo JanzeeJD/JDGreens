@@ -28,7 +28,7 @@
                         <option value="returned" selected="<%= locals.order.status === 'returned' %>">Returned</option>
                       </select>
                     </p>
-                    <p><strong>Total Price:</strong> $<%= locals.order.total %></p>
+                    <p><strong>Total Price:</strong> ₹<%= locals.order.total %></p>
                     <button id="cancelOrderBtn" data-id="<%= order._id %>">Cancel Order</button>
                   </div>
                 </div>
@@ -79,10 +79,10 @@
                     <tbody>
                       <% locals.order.items.forEach(item => { %>                       
                         <tr>
-                          <td class="text-center"><%= item.productId %></td>
+                          <td class="text-center"><%= item.productName %></td>
                           <td class="text-center"><%= item.quantity %></td>
-                          <td class="text-center">$<%= item.price %></td>
-                          <td class="text-center">$<%= item.quantity * item.price %></td>
+                          <td class="text-center">₹<%= item.price %></td>
+                          <td class="text-center">₹<%= item.quantity * item.price %></td>
                         </tr>
                       <% }) %>
                     
@@ -99,32 +99,29 @@
           </div>
       </main>
       <%- include('partials/_scripts.ejs') %>
-      <script>
-        const cancelOrderBtn = document.getElementById('cancelOrderBtn');
-        cancelOrderBtn.addEventListener('click', (e) => {
-          
-          fetch(`/admin/users/orders/${e.target.dataset.id}`, {
-            method: "PATCH",
-            headers: {
-              "content-type": "application/json"
-            },
-            body: JSON.stringify({
-              status: "Cancelled",
-              isCancelled: true
-            })
-          }).then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              document.getElementById('orderStatusText').innerText = "Cancelled";
-              alert("Order Cancelled");
-            } else {
-              alert("An error occured.");
-              console.error(data);
-            }
-          })
-          .catch(alert);
-        })
-      </script>
+   <script>
+  const orderStatusDropdown = document.getElementById('orderStatusDropdown');
+  orderStatusDropdown.addEventListener('change', (e) => {
+    fetch(`/admin/users/orders/${e.target.dataset.id}`, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        status: e.target.value
+      })
+    }).then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alertOk("Order status updated successfully");
+      } else {
+        alertNotOk("An error occurred.");
+        console.error(data);
+      }
+    })
+    .catch(alert);
+  });
+</script>
 </body>
 
 </html>

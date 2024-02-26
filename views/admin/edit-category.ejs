@@ -15,7 +15,7 @@
                   </div>
                 </div>
                 <div class="card-body px-0 pb-2">
-                  <form id="jd-productForm" style="padding: 3rem" action="/admin/category/edit-category/<%= locals.category._id %>" method="POST">
+                  <form id="jd-productForm" style="padding: 3rem" action="/admin/category/edit-category/<%= locals?.category._id %>" method="POST">
                     <label for="categoryName">Name:</label><br>
                     <input type="text" id="categoryName" name="categoryName" value="<%= locals.category.name %>"><br>
                     <label for="categoryDescription">Description:</label><br>

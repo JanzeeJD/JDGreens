@@ -29,6 +29,8 @@
                     </select>
                     <label for="discountValue">Discount Value:</label><br>
                     <input type="number" id="discountValue" name="discountValue" value="<%= locals.coupon.discountValue %>">
+                    <label for="maxDiscount">Max Discount:</label><br>
+                    <input type="number" id="maxDiscount" name="maxDiscount" value="<%= locals.coupon.maxDiscount %>">
 
                     <input type="submit" value="Edit">
                     <p style="color: red;font-weight:bold"><%= locals.error %></p>

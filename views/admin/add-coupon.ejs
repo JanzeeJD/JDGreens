@@ -19,14 +19,17 @@
                     <label for="couponName">Name:</label><br>
                     <input type="text" id="couponName" name="couponName"><br>
                     <label for="couponCode">Code:</label><br>
-                    <input type="text" id="couponCode" name="couponCode"><br>
+                    <input type="text" id="couponCode" name="couponCode"><button type="button" id="codeGenerator">Generate</button><br>
                     <label for="discountType">Discount Type:</label><br>
                     <select id="discountType" name="discountType">
                       <option value="PERCENTAGE">PERCENTAGE</option>
                       <option value="FLAT">FLAT</option>
                     </select>
                     <label for="discountValue">Discount Value:</label><br>
-                    <input type="number" id="discountValue" name="discountValue"><br>
+                    <input type="number" id="discountValue" name="discountValue">
+                    <p style="margin-top:0">This coupon is available for purchases from ₹<span id="maxDiscountAmount">0</span></p>
+                    <label for="maxDiscount">Max Discount:</label><br>
+                    <input type="number" id="maxDiscount" name="maxDiscount"><br>
 
                     <input type="submit" value="Add">
                     <p style="color: red;font-weight:bold"><%= locals.error %></p>
@@ -41,6 +44,52 @@
           </div>
       </main>
       <%- include('partials/_scripts.ejs') %>
+      <script>
+        function generateRandomString(n) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let randomString = '';
+            for (let i = 0; i < n; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                randomString += characters.charAt(randomIndex);
+            }
+            return randomString;
+        }
+
+        const couponCode = document.getElementById("couponCode")
+        const codeGenerator = document.getElementById("codeGenerator");
+        codeGenerator.addEventListener('click', () => {
+          couponCode.value = generateRandomString(5);
+        })
+
+        const maxDiscount = document.getElementById('maxDiscount');
+        const discountValue = document.getElementById('discountValue');
+
+        const discountType = document.getElementById('discountType');
+        discountType.addEventListener('change', (e) => {
+          if (e.target.value === 'FLAT') {
+            maxDiscount.value = Number(discountValue.value);
+            maxDiscount.readOnly = true;
+            maxDiscount.hidden = true;
+            maxDiscount.labels[0].style.display = 'none';
+          } else {
+            maxDiscount.readOnly = false;
+            maxDiscount.hidden = false;
+            maxDiscount.labels[0].style.display = 'inline';
+          }
+        });
+
+        const maxDiscountAmount = document.getElementById('maxDiscountAmount');
+        discountValue.addEventListener('input', (e) => {
+          if (discountType.value === 'FLAT') {
+            maxDiscountAmount.parentElement.style.visibility = "visible";
+            const purchaseUpto = Number(e.target.value) * 5;
+            maxDiscountAmount.innerText = purchaseUpto;
+            maxDiscount.value = Number(e.target.value);
+          } else {
+            maxDiscountAmount.parentElement.style.visibility = "hidden";
+          }
+        })
+      </script>
    
 </body>
 
