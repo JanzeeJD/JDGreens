@@ -10,14 +10,14 @@ function addToCart(productId) {
   })
   .then((res)=>{
     if (res.ok) {
-      alert("added to cart")
+      alertOk("added to cart")
     } else {
-      alert("cannot add to cart")
+      alertNotOk("cannot add to cart")
     }
   })
   .catch((err)=>{
     console.error(err)
-    alert("an error occured")
+    alertNotOk("an error occured")
   })
 }
 
@@ -33,13 +33,13 @@ function addToWishlist(productId) {
   })
   .then((res)=>{
     if (res.ok) {
-      alert("added to wishlist")
+      alertOk("added to wishlist")
     } else {
-      alert("cannot add to wishlist")
+      alertNotOk("cannot add to wishlist")
     }
   })
   .catch((err)=>{
     console.error(err)
-    alert("an error occured")
+    alertNotOk("an error occured")
   })
 }
