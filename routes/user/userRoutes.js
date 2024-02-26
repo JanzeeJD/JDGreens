@@ -16,12 +16,13 @@ import {  GetShopPage,
   PatchOrderDetailPage,
   PostChangePasswordLoggedIn,
   PlaceOrderForPayment,
-  GetWalletPage
+  GetWalletPage,
+  GenerateOrderInvoiceAsPDF
 }from '../../controllers/user/userController.js';
 
 const router = Router();
 
-// todo: need a route to render my-account.ejs, / route
+
 
 router.post('/payment', PlaceOrderForPayment)
 
@@ -43,6 +44,7 @@ router.post('/address/edit/:addressId',EditAddressPost)
 router.get('/orders',GetOrdersPage)
 router.get('/orders/:orderId',GetOrderDetailPage)
 router.patch('/orders/:orderId',PatchOrderDetailPage)
+router.get("/orders/:orderId/report", GenerateOrderInvoiceAsPDF);
 
 router.get("/wallet", GetWalletPage);
 
