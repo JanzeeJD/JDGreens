@@ -179,7 +179,7 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    alert("An error occured.");
+                    alertNotOk("An error occured.");
                 })
             }
 
@@ -205,10 +205,10 @@
 
                 if (currentValue < minValue) {
                     e.target.value = minValue;
-                    alert("Atleast add one quantity");
+                    alertNotOk("Atleast add one quantity");
                 } else if (currentValue > maxValue) {
                     e.target.value = maxValue;
-                    alert("Only 5 quantity allowed for each order");
+                    alertNotOk("Only 5 quantity allowed for each order");
                 } else {
 
                     // fetch backend

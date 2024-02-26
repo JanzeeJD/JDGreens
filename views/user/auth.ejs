@@ -329,6 +329,7 @@
 				<input name="name" type="text" placeholder="Name" />
 				<input name="email" type="email" placeholder="Email" />
 				<input name="password" type="password" placeholder="Password" />
+				<input name="referralCode" type="referralCode" placeholder="Referral (Optional)" value="<%= locals.referralCode || '' %>" <%= locals.referralCode && locals.referralCode.length > 1 ? "readonly" : "" %> />
 				<p class="error-message" id="signupError"><%= locals.signupError %></p>
 				<button>Sign Up</button>
 			
@@ -444,7 +445,8 @@
 
 			registerForm.submit();
 		});
-
+    
+		// password marannu poyo!?
 		const forgetPasswordLink = document.getElementById("forget-password-link");
 		forgetPasswordLink.addEventListener('click', (e) => {
 			e.preventDefault();

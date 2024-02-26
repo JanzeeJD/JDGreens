@@ -53,47 +53,50 @@
                 <div class="col-sm-6 col-lg-6 mb-3">
                     <div class="shipping-method-box">
                         <div class="title-left">
-                            <h3>Shipping Method</h3>
+                            <h3>Choose Payment Method</h3>
                         </div>
-                        <div class="mb-4" id="shippingOptions">
-                            <div class="custom-control custom-radio">
-                                <input value="0" id="shippingOption1" name="shippingOption" class="custom-control-input" checked="checked" type="radio">
-                                <label class="custom-control-label" for="shippingOption1">Standard Delivery</label> <span class="float-right font-weight-bold">FREE</span> </div>
-                            <div class="ml-4 mb-2 small">(3-7 business days)</div>
-                            <div class="custom-control custom-radio">
-                                <input value="50" id="shippingOption2" name="shippingOption" class="custom-control-input" type="radio">
-                                <label class="custom-control-label" for="shippingOption2">Express Delivery</label> <span class="float-right font-weight-bold">₹50.00</span> </div>
-                            <div class="ml-4 mb-2 small">(2-4 business days)</div>
-                            <div class="custom-control custom-radio">
-                                <input value="100" id="shippingOption3" name="shippingOption" class="custom-control-input" type="radio">
-                                <label class="custom-control-label" for="shippingOption3">Next Business day</label> <span class="float-right font-weight-bold">₹100.00</span> </div>
+                        <div class="mb-4">
+                            <div>
+                                <div class="custom-control custom-radio">
+                                    <input data-wallet-amount="<%= locals.wallet %>" value="wallet" id="wallet" name="paymentOption" class="custom-control-input" type="radio" <%= locals.wallet < locals.totalPrice && "disabled" %>>
+                                    <label class="custom-control-label" for="wallet">Wallet</label> <span class="float-right font-weight-bold"></span> 
+                                </div>
+                                <div id="walletText" class="ml-4 mb-2 small">(₹ <%= locals.wallet %> left in balance)</div>
+                                <div class="custom-control custom-radio">
+                                    <input value="cod" id="cod"  name="paymentOption" class="custom-control-input" type="radio" <%= locals.totalPrice > 2000 && "disabled" %>>
+                                    <label class="custom-control-label" for="cod">Cash on Delivery</label> <span class="float-right font-weight-bold"></span> 
+                                </div>
+                                <div id="codText" class="ml-4 mb-2 small text-danger">(only upto ₹2,000)</div>
+                                <div class="custom-control custom-radio">
+                                    <input value="upi" id="upi" name="paymentOption" class="custom-control-input" checked="checked" type="radio">
+                                    <label class="custom-control-label" for="upi">Net Banking</label> <span class="float-right font-weight-bold"></span> 
+                                </div>                       
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-6 col-lg-6 mb-3">
-                    <div class="title-left">
-                        <h3>Choose Payment Method</h3>
-                    </div>
-                    <div class="mb-4">
-                        <div>
-                            <div class="custom-control custom-radio">
-                                <input data-wallet-amount="<%= locals.wallet %>" value="wallet" id="wallet" name="paymentOption" class="custom-control-input" type="radio" <%= locals.wallet < locals.totalPrice && "disabled" %>>
-                                <label class="custom-control-label" for="wallet">Wallet</label> <span class="float-right font-weight-bold"></span> 
-                            </div>
-                            <div id="walletText" class="ml-4 mb-2 small">(₹ <%= locals.wallet %> left in balance)</div>
-                            <div class="custom-control custom-radio">
-                                <input value="cod" id="cod"  name="paymentOption" class="custom-control-input" checked="checked" type="radio">
-                                <label class="custom-control-label" for="cod">Cash on Delivery</label> <span class="float-right font-weight-bold"></span> 
-                            </div>
-                            <div class="custom-control custom-radio">
-                                <input value="upi" id="upi" name="paymentOption" class="custom-control-input" type="radio">
-                                <label class="custom-control-label" for="upi">Net Banking</label> <span class="float-right font-weight-bold"></span> 
-                            </div>                       
+                    <div class="odr-box">
+                        <div class="title-left">
+                            <h3>Shopping Cart</h3>
+                        </div>
+                        <div class="rounded p-2 bg-light">
+                            <% if (locals.cart && locals.cart.products.length > 0) { %>
+                                <% locals.cart.products.forEach(product => { %>                                        
+                                    <div class="media mb-2 border-bottom">
+                                        <div class="media-body"> <a href="/shop/<%= product.productId %>"> <%= product.name %></a>
+                                            <div class="small text-muted">Price: ₹<%= product.price %> <span class="mx-2">|</span> Qty: <%= product.productQty %> <span class="mx-2">|</span> Subtotal: <%= product.price * product.productQty %></div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <p>You have an empty cart.</p>
+                            <% } %>
                         </div>
                     </div>
-
+                    
                 </div>
                 <div class="col-sm-6 col-lg-6 mb-3">
                     <div class="shipping-method-box">
@@ -113,23 +116,22 @@
                 <!-- <div class="col-sm-12 col-lg-12 mb-3"> -->
                     <!-- <div class="row"> -->
                         <div class="col-md-6 col-lg-6">
-                            <div class="odr-box">
-                                <div class="title-left">
-                                    <h3>Shopping Cart</h3>
-                                </div>
-                                <div class="rounded p-2 bg-light">
-                                    <% if (locals.cart && locals.cart.products.length > 0) { %>
-                                        <% locals.cart.products.forEach(product => { %>                                        
-                                            <div class="media mb-2 border-bottom">
-                                                <div class="media-body"> <a href="/shop/<%= product.productId %>"> <%= product.name %></a>
-                                                    <div class="small text-muted">Price: ₹<%= product.price %> <span class="mx-2">|</span> Qty: <%= product.productQty %> <span class="mx-2">|</span> Subtotal: <%= product.price * product.productQty %></div>
-                                                </div>
-                                            </div>
-                                        <% }) %>
-                                    <% } else { %>
-                                        <p>You have an empty cart.</p>
-                                    <% } %>
-                                </div>
+                            <div class="title-left">
+                                <h3>Shipping Method </h3>
+                            </div>
+                            
+                            <div class="mb-4" id="shippingOptions">
+                                <div class="custom-control custom-radio">
+                                    <input value="0" id="shippingOption1" name="shippingOption" class="custom-control-input" checked="checked" type="radio">
+                                    <label class="custom-control-label" for="shippingOption1">Standard Delivery</label> <span class="float-right font-weight-bold">FREE</span> </div>
+                                <div class="ml-4 mb-2 small">(3-7 business days)</div>
+                                <div class="custom-control custom-radio">
+                                    <input value="50" id="shippingOption2" name="shippingOption" class="custom-control-input" type="radio">
+                                    <label class="custom-control-label" for="shippingOption2">Express Delivery</label> <span class="float-right font-weight-bold">₹50.00</span> </div>
+                                <div class="ml-4 mb-2 small">(2-4 business days)</div>
+                                <div class="custom-control custom-radio">
+                                    <input value="100" id="shippingOption3" name="shippingOption" class="custom-control-input" type="radio">
+                                    <label class="custom-control-label" for="shippingOption3">Next Business day</label> <span class="float-right font-weight-bold">₹100.00</span> </div>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-6">
@@ -191,13 +193,14 @@
                     <div id="couponOptions">
                         <% if (locals.coupons && locals.coupons.length > 0) { %>
                             <% locals.coupons.forEach((coupon, idx) => { %>
-                                <div class="coupon-ticket" aria-labelledby="offer">
+                                <div class="coupon-ticket " aria-labelledby="offer">
                                     <div class="custom-control custom-radio">
                                         <input 
                                             data-discount="<%= coupon.discountValue %>" 
                                             data-code="<%= coupon.code %>" 
                                             data-type="<%= coupon.discountType %>"
                                             value="<%= coupon._id %>" 
+                                            data-max-value="<%= coupon.maxDiscount %>"
                                             id="coupon<%= idx %>" 
                                             name="selectedCoupon" 
                                             class="custom-control-input" 
@@ -250,6 +253,8 @@
     <script>
         const walletRadioButton = document.getElementById("wallet");
         const codRadioButton = document.getElementById("cod");
+        const upiRadioButton = document.getElementById("upi");
+        const codText = document.getElementById('codText');
         const walletAmount = Number(walletRadioButton.dataset.walletAmount);
         const walletText = document.getElementById("walletText");
         
@@ -279,14 +284,17 @@
         const couponOptions = document.getElementById('couponOptions');
         couponOptions.addEventListener('click', (e) => {
             if (e.target.type === 'radio') {
-                const { code, type, discount } = e.target.dataset;
+                const { code, type, discount, maxValue } = e.target.dataset;
                 console.log(code, type, discount)
 
                 selectedCoupon.code = code;
 
                 if (type === 'PERCENTAGE') {
                     const totalPrice = Number(grandTotal.dataset.price);
-                    selectedCoupon.value = (totalPrice * Number(discount)) / 100;
+                    const amountToDiscount = (totalPrice * Number(discount)) / 100;
+                    const allowedDiscount = Math.min(amountToDiscount, Number(maxValue));
+
+                    selectedCoupon.value = allowedDiscount;
                 } else if (type === 'FLAT') {
                     selectedCoupon.value = Number(discount)
                 }
@@ -297,7 +305,7 @@
         const selectCouponBtn = document.getElementById('selectCouponBtn');
         selectCouponBtn.addEventListener('click', (e) => {
             if (!selectedCoupon.code) {
-                return alert("Select a coupon to apply.");
+                return alertNotOk("Select a coupon to apply.");
             }
 
             $('#couponModal').modal('hide');
@@ -331,12 +339,30 @@
             console.log(`= ₹ ${grandTotalPrice}`)
             grandTotal.innerText = '₹' + grandTotalPrice;
 
+            if (grandTotalPrice > 2000) {
+                codText.style.display = "block";
+                codRadioButton.disabled = true;
+                if (codRadioButton.checked) {
+                    codRadioButton.checked = false;
+                    upi.checked = true;
+                    alertNotOk("Cash on Delivery not available for above ₹2,000.");
+                }
+            } else {
+                codRadioButton.disabled = false;
+                codText.style.display = "none";
+            }
+
             if (grandTotalPrice > walletAmount) {
                 walletRadioButton.disabled = true;
                 walletText.style.color = "red";
                 if (walletRadioButton.checked) {
+                    alertNotOk("Insufficient wallet balance.");
                     walletRadioButton.checked = false;
-                    codRadioButton.checked = true;
+                    if (grandTotalPrice <= 2000) {
+                        codRadioButton.checked = true;
+                    } else {
+                        upiRadioButton.checked = true;
+                    }
                 }
             } else {
                 walletRadioButton.disabled = false;

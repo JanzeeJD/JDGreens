@@ -126,10 +126,10 @@
                 body: data 
             }).then(res => {
                 if (!res.ok) {
-                    throw new Error("Invalid credentials");
+                    throw new Error("Invalid password");
                 }
 
-                alert("Changed password successfully.");
+                alertOk("Changed password successfully.");
 
                 e.target.clear();
             }).catch(alert);
