@@ -6,10 +6,105 @@ import User from '../../models/User.js';
 import Order from '../../models/Order.js';
 import Coupon from '../../models/Coupon.js';
 import { findTotalPrice } from './cartController.js';
+import PDFDocument from 'pdfkit-table';
 import bcrypt from 'bcrypt';
 import Razorpay from "razorpay";
 import { config } from 'dotenv';
 config();
+
+async function generateInvoice(res, order) {
+  const doc = new PDFDocument();
+  const filename = "Order Invoice.pdf";
+
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+  res.setHeader("Content-Type", "application/pdf");
+
+  doc.pipe(res);
+
+  // Add company name, logo, place, pincode, etc.
+  doc.font("Helvetica-Bold").text("JD Greens", { font: 36, align: "center", margin: 10 });
+
+  // Add logo to the left side
+  //   doc.image('public/img/somePlant.jpeg', {
+  //     width: 100,
+  //     x: 410, // Adjust for desired left margin
+  //     y: 80 // Adjust for vertical position
+  // });
+  
+  doc.moveDown();
+
+  // Add other invoice details
+  doc.text(`Address:  ${order.address?.houseName}`, { font: 10 });
+  doc.text(`Pincode: ${order.address?.pin}`, { font: 10 });
+  doc.text(`Phone: ${order.address?.mobile}`, { font: 10 });
+
+  // Move to the next line after the details
+  doc.moveDown();
+
+  doc.moveDown(); // Move down after the title
+  doc.font("Helvetica-Bold").text(`Invoice`, { font: 10, align: "center", margin: 10 });
+  doc.font("Helvetica-Bold").text(`On ${order.createdAt}`, { font: 14, align: "center", margin: 10 });
+
+  doc.moveDown(); // Move down after the title
+  const tableData = {
+    headers: [
+      "Product",
+      "Price",
+      "Quantity"
+    ],
+
+    rows: order.items.map((productDetail) => [
+      productDetail?.productName,
+      '$ ' + productDetail?.price,
+      productDetail?.quantity
+    ])
+  };
+
+  // Customize the appearance of the table
+  await doc.table(tableData, {
+    prepareHeader: () => doc.font("Helvetica-Bold"),
+    prepareRow: (row, i) => doc.font("Helvetica").fontSize(12),
+    hLineColor: '#b2b2b2', // Horizontal line color
+    vLineColor: '#b2b2b2', // Vertical line color
+    textMargin: 5, // Margin between text and cell border
+  });
+
+  doc.text(`Total Price: $${order.total}`, { font: 10 });
+  doc.text(`Amount Payable: $${order.amountPayable}`, { font: 10 });
+
+  // Finalize the PDF document
+  doc.end();
+}
+
+export async function GenerateOrderInvoiceAsPDF(req, res) {
+  const { orderId } = req.params;
+  const order = await Order.findOne({ _id: orderId });
+  generateInvoice(res, order);
+}
+
+/**
+ * 
+ * @param {Coupon} coupon 
+ * @param {Number} totalPrice 
+ * @returns 
+ */
+function getDiscountValue(coupon, totalPrice) {
+  if (coupon.discountType === 'FLAT') {
+    // A FLAT coupon maybe applied only if the total price >= discount value * 5
+    // eg: For a flat discount of $100, the user has to shop for minimum ($100 x 5 = $500) 
+    if ((coupon.discountValue * 5) >= totalPrice) {
+      return coupon.discountValue;
+    } else {
+      throw new Error(`Minimum of ${(coupon.discountValue * 5)} for this purchase.`)
+    }
+  } else if (coupon.discountType === 'PERCENTAGE') {
+    const amountToDiscount = (totalPrice * coupon.discountValue) / 100;
+    const allowedDiscount = Math.min(amountToDiscount, coupon.maxDiscount);
+    return allowedDiscount;
+  } else {
+    throw new Error("No valid coupon given.")
+  }
+}
 
 var razorPayInstance = new Razorpay({ key_id: process.env.RAZORPAY_ID_KEY, key_secret: process.env.RAZORPAY_SECRET_KEY });
 
@@ -24,16 +119,26 @@ export async function GetCheckoutPage(req, res) {
   const addresses = user.address;
   const wallet = user.wallet;
 
+  const ourCart = await Cart.findOne({ user: userId });
+  const totalPrice = findTotalPrice(ourCart);
+
   // todo: only fetch coupons which didnt expire
-  const coupons = await Coupon.find({
+  
+  // totalPrice coupon.discountValue 
+  let coupons = await Coupon.find({
     $or: [
       { usageLimit: { $exists: false } },
       { usageLimit: { $gt: 0 } }
     ]
+  }).lean();
+
+  coupons = coupons.filter(coupon => {
+    if (coupon.discountType === 'FLAT' && totalPrice < (coupon.discountValue * 5)) {
+      return false;
+    }
+    return true;
   });
 
-  const ourCart = await Cart.findOne({ user: userId });
-  const totalPrice = findTotalPrice(ourCart);
   if (ourCart.products.length < 1) {
     res.redirect('/cart');
     return;
@@ -48,6 +153,7 @@ export async function PlaceOrderForPayment(req, res) {
   const user = await User.findOne({ _id: userId });
   const ourCart = await Cart.findOne({ user: userId });
   let totalPrice = findTotalPrice(ourCart);
+  const cartTotal = totalPrice;
   if (shippingOption === '50') {
     totalPrice += 50;
   } else if (shippingOption === '100') {
@@ -55,10 +161,13 @@ export async function PlaceOrderForPayment(req, res) {
   }
   const coupon = await Coupon.findOne({ code: couponCode });
   if (coupon) {
-    if (coupon.discountType === 'FLAT') {
-      totalPrice -= coupon.discountValue;
-    } else if (coupon.discountType === 'PERCENTAGE') {
-      totalPrice -= (totalPrice * coupon.discountValue) / 100;
+    try {
+      const discountAmount = getDiscountValue(coupon, cartTotal);
+      totalPrice -= discountAmount;
+    } catch (err) {
+      // Coupon could not be applied
+      console.log("A coupon could not be applied.");
+      console.error(err);
     }
   }
 
@@ -123,20 +232,18 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
   console.log(coupon ? "Coupon was found" : "Coupon was not found.")
   if (coupon) {
     // todo: Check if cuopon is valid, not used before.
-    if (coupon.discountType === 'FLAT') {
-      newOrder.discountAmount = coupon.discountValue;
-      newOrder.amountPayable = totalPrice - coupon.discountValue;
-    } else if (coupon.discountType === 'PERCENTAGE') {
-      newOrder.discountAmount = (totalPrice * coupon.discountValue) / 100;
-      newOrder.amountPayable = totalPrice - newOrder.discountAmount;
-    } else {
-      newOrder.discountAmount = 0;
-      newOrder.amountPayable = totalPrice;
+    try {
+      const discountAmount = getDiscountValue(coupon, totalPrice);
+      newOrder.discountAmount = discountAmount;
+      newOrder.amountPayable = totalPrice - discountAmount;
+      coupon.usedBy.push(userId);
+      coupon.usageLimit && coupon.usageLimit--;
+      await coupon.save();
+    } catch (err) {
+      console.error(err);
+      console.log("Coupon could not be applied.");
     }
 
-    coupon.usedBy.push(userId);
-    coupon.usageLimit && coupon.usageLimit--;
-    await coupon.save();
   } else {
     newOrder.amountPayable = totalPrice;
   }
@@ -180,6 +287,10 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
       amount: -newOrder.amountPayable,
       type: "order"
     });
+  } else if (newOrder.paymentMethod === 'cod') {
+    if (totalPrice > 2000) {
+      return res.status(400).send({ error: "COD not allowed for above Rs. 2000" });
+    }
   }
 
   newOrder.total = totalPrice;
@@ -454,7 +565,10 @@ export async function PostChangePasswordLoggedIn(req, res) {
   const { oldPassword, newPassword } = req.body;
 
   const user = await User.findById(req.session.userId);
-
+  if(!newPassword || newPassword.length<8){
+    res.status(400).send({error: "password format is invalid"})
+    return
+  }
   // todo: Validate the `newPassword` with Regex & Length check
 
   if (await bcrypt.compare(oldPassword, user.password)) {

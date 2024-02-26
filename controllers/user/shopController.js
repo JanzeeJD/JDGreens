@@ -20,11 +20,13 @@ export async function GetProductPage(req, res) {
 
   const product = await Product.findById(productId).populate('category');
 
+  const featured = await Product.find({ _id: { $ne: productId } }).limit(4)
+
   if (!product) {
     res.sendStatus(404);
     return;
   }
-  res.render("user/shop-detail", { product })
+  res.render("user/shop-detail", { product, featured })
 }
 
 export async function GetShopPage(req, res) {

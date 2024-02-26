@@ -126,11 +126,13 @@ export async function PostChangePassword(req, res) {
 
 
 export function GetSignupPage(req, res) {
-  res.render('user/auth', { override: true });
+  const { code } = req.query;
+  const referralCode = code || '';
+  res.render('user/auth', { override: true, referralCode });
 }
 
 export async function PostSignup(req, res) {
-  const { name, email, password } = req.body;
+  const { name, email, password, referralCode } = req.body;
   if (!name) {
     res.render("user/auth", { override: true, signupError: "Enter a valid name" });
     return
@@ -158,6 +160,12 @@ export async function PostSignup(req, res) {
   try {
     const user = await User.create({ name, email, password: hashedPassword });
     const cart = await Cart.create({ user: user._id });
+
+    if (referralCode && referralCode.length >= 3) {
+      req.session.wasReferred = true;
+      req.session.referralCode = referralCode;
+    }
+
     req.session.loggedIn = false;
     req.session.newlyRegistered = true;
     req.session.email = email;
@@ -165,6 +173,7 @@ export async function PostSignup(req, res) {
     req.session.otpExpiry = Date.now() + (3 * 60000);
     console.log(`[otp] ⚡ OTP for ${user.email} is ${req.session.otp} `);
     res.redirect('/signup-otp');
+
   } catch (err) {
     console.error(err);
     res.send(err);
@@ -210,11 +219,38 @@ export async function PostOTPPage(req, res) {
     req.session.otp = null;
     req.session.otpExpiry = 0;
     req.session.newlyRegistered = false;
-    const user = await User.findOneAndUpdate({ email: req.session.email }, { $set: { isVerified: true } });
+    const user = await User.findOne({ email: req.session.email });
     if (!user) {
       res.status(404).send({ success: false, error: "User not found." });
       return;
     }
+
+    if (req.session.wasReferred) {
+      const referredUser = await User.findOne({ referralCode: req.session.referralCode });
+        if (referredUser) {
+          console.log(`🎈 [referral] ${user.name} was referred by ${referredUser.name}.`);
+          referredUser.wallet += 100;
+          referredUser.walletTransactions.push({
+            createdAt: new Date(),
+            amount: 100,
+            type: `referral reward (${user.name})`
+          });
+  
+          user.wallet += 50;
+          user.walletTransactions.push({
+            createdAt: new Date(),
+            amount: 50,
+            type: "referral bonus"
+          });
+  
+          req.session.wasReferred = true;
+          await referredUser.save();
+        }
+    }
+    user.isVerified = true;
+    await user.save();
+
+    // const user = await User.findOneAndUpdate({ email: req.session.email }, { $set: { isVerified: true } });
     res.status(200).send({ success: true })
   } else {
     res.status(403).send({ success: false, error: "An invalid OTP was entered." });
@@ -243,6 +279,10 @@ export async function PostResendOTP(req, res) {
  * @param {express.Response} res
  */
 export async function GetHomePage(req, res) {
+  if (req.session.wasReferred) {
+    req.session.wasReferred = false;
+    res.locals.wasReferred = true;
+  }
   const products = await Product.find().limit(4);
   res.render('user/index', { products });
 }
