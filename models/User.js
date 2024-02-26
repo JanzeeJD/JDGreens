@@ -1,6 +1,7 @@
 // @ts-check
 
 import mongoose from 'mongoose';
+import { generateRandomString } from '../utils/codeGenerator.js';
 
 const UserSchema = new mongoose.Schema({
   name:{
@@ -25,6 +26,11 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
     default: false
+  },
+  referralCode: {
+    type: String,
+    required: true,
+    default: () => generateRandomString(6)
   },
   wallet:{
     type:Number,
