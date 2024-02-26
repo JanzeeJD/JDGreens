@@ -12,6 +12,7 @@ import Category from '../../models/Category.js';
  * @param {express.Response} res
  */
 export async function GetProductListingPage(req, res) {
+  res.locals.activePanel = 'products';
   const products = await Product.find({ isDeleted: false }).populate("category").exec();
   res.render("admin/product", { products })
 }

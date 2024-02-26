@@ -1,6 +1,11 @@
 import Order from '../../models/Order.js';
 import PDFDocument from 'pdfkit-table';
 
+export function GetSalesReportPage(req,res){
+  res.locals.activePanel = 'sales';
+  res.render("admin/sales")
+}
+
 export function GenerateSalesReportAsPDF(req, res) {
   console.log("Sales Report Should Generate");
   const startingDate = new Date(req.body.startingDate);

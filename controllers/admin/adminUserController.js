@@ -4,6 +4,7 @@ import User from "../../models/User.js";
 import Order from "../../models/Order.js"
 
 export async function GetUserPage(req, res) {
+  res.locals.activePanel = 'users';
   const allUsers = await User.find();
   res.render("admin/users", { users: allUsers });
 }
@@ -20,6 +21,7 @@ export async function SetBlockStatus(req, res) {
 }
 
 export async function GetAdminOrdersPage(req, res) {
+  res.locals.activePanel = 'orders';
   const allOrders = await Order.find();
   res.render("admin/order", { orders: allOrders });
 }
@@ -33,7 +35,7 @@ export async function GetAdminOrderDetailPage(req, res) {
 export async function PatchAdminOrderDetailPage(req, res) {
   const { orderId } = req.params;
   const order = await Order.findById(orderId);
-  const { status, isCancelled } = req.body;
+  const { status, isCancelled, } = req.body;
 
   try {
     order.isCancelled = isCancelled;

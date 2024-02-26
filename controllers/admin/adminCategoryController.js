@@ -9,7 +9,6 @@ export function GetAddCategoryPage(req, res) {
 export async function GetEditCategoryPage(req, res) {
   const categoryId = req.params.id;
   const targetCategory = await Category.findOne({ _id: categoryId });
-  console.log(targetCategory)
   res.render("admin/edit-category", { category: targetCategory });
 }
 
@@ -21,12 +20,12 @@ export async function PostEditCategory(req, res) {
   const description = req.body.categoryDescription?.trim();
 
   if (!name) {
-    res.render("admin/edit-category", { error: "Enter a category." });
+    res.render("admin/edit-category", { category: existingCategory, error: "Enter a category." });
     return;
   }
 
   if (!description) {
-    res.render("admin/edit-category", { error: "Enter a description." });
+    res.render("admin/edit-category", { category: existingCategory, error: "Enter a description." });
     return;
   }
 
@@ -35,7 +34,7 @@ export async function PostEditCategory(req, res) {
     const duplicateCategory = await Category.findOne({ name: {$regex : lowerCaseName, '$options' : 'i'} });
     if (duplicateCategory) {
       // If a category with the same name exists, render the add-category view with an error message
-      res.render("admin/edit-category", { error: "Category already exists." });
+      res.render("admin/edit-category", { category: existingCategory, error: "Category already exists." });
       return;
     }
   }

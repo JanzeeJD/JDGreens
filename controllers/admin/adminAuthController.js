@@ -58,6 +58,7 @@ export async function PostAdminLogin(req, res) {
  * @param {express.Response} res
  */
 export async function GetAdminDashboard(req, res) {
+  res.locals.activePanel = 'dashboard';
   const stats = await generateStatistics();
   res.render("admin/dashboard", { stats });
 }
@@ -70,6 +71,7 @@ export async function GetAdminDashboard(req, res) {
  * @param {express.Response} res
  */
 export async function GetUserPage(req, res) {
+  res.locals.activePanel = 'users';
   const allUsers = await User.find();
   res.render("admin/users", { users: allUsers });
 }
@@ -82,6 +84,7 @@ export async function GetUserPage(req, res) {
  * @param {express.Response} res
  */
 export async function GetCategoryPage(req, res) {
+  res.locals.activePanel = 'categories';
   const categories = await Category.find();
   res.render("admin/category",  { categories })
 }
