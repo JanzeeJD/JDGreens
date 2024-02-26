@@ -70,7 +70,8 @@ app.use(session({
 //   console.log(`[hit] ${req.method} - ${req.url}`)
 //   next();
 // })
- 
+
+
 app.use(nocache())
 app.use(applyLocals);
 app.use('/', homeRoutes);
@@ -87,11 +88,15 @@ app.use('/admin/category', adminCategoryRoutes);
 app.use('/admin/coupon', adminCouponRoutes);
 app.use("/admin/reports", adminSalesRoutes);
 
+// Handle 404s
+app.use((req, res, next) => {
+  res.status(404).render("404");
+})
+
 app.use((err, req, res, next) => {
   console.error(err.stack)
-  res.status(500).send('Something broke!');
-  // process.exit(1); // server will shut down on catastrophic errors
-})
+  res.status(500).send('Sever adichuu poyiii guyzz!');
+ })
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
