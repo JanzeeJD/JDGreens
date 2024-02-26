@@ -1,5 +1,15 @@
 body{
   position: relative!important;
+    font-size: .85em;
+    font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
+    color: #232323;
+    background-color: #fff;
+    background: url('Images/Login_Background.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #FFFFFF;
+    background-position: center center;
+    background-size: 100% 100%;
 }
 
 /* user side image previewer */
@@ -88,5 +98,12 @@ width: calc(100%/2 - 1em);
   }
   img {
     display: block;
+  }
+}
+
+table.sub-table {
+  border: 1px solid black;
+  :is(th, td, tr, thead, tbody) {
+    border: 1px solid rgba(0, 0, 0, 0.338)!important;
   }
 }

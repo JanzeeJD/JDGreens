@@ -10587,6 +10587,7 @@ fieldset:disabled .btn {
 
 .text-center {
   text-align: center !important;
+  padding-right: 20px;
 }
 
 .text-decoration-none {
@@ -10754,6 +10755,7 @@ fieldset:disabled .btn {
 
 .bg-transparent {
   background-color: transparent !important;
+
 }
 
 .bg-gray-100 {
@@ -10762,6 +10764,7 @@ fieldset:disabled .btn {
 
 .bg-gray-200 {
   background-color: #f0f2f5 !important;
+  
 }
 
 .bg-gray-300 {
@@ -20496,6 +20499,7 @@ fieldset:disabled .btn {
   background-size: 150%;
   background-position-x: 25%;
   position: relative;
+  margin-top: 20px;
   overflow: hidden;
   -webkit-appearance: none;
 }
@@ -21162,6 +21166,7 @@ fieldset:disabled .btn {
 
 .card {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background-color: rgba(255,255,255,.6);
 }
 
 .card[data-animation="true"] .card-header {
@@ -21198,6 +21203,7 @@ fieldset:disabled .btn {
   background-color: transparent;
   box-shadow: none;
 }
+
 
 .card .card-footer {
   padding: 1.5rem;
