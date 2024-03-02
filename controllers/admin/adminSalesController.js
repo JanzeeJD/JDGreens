@@ -1,9 +1,10 @@
 import Order from '../../models/Order.js';
 import PDFDocument from 'pdfkit-table';
 
-export function GetSalesReportPage(req,res){
+export async function GetSalesReportPage(req,res){
   res.locals.activePanel = 'sales';
-  res.render("admin/sales")
+  const orders = await Order.find();
+  res.render("admin/sales", { orders });
 }
 
 export function GenerateSalesReportAsPDF(req, res) {
