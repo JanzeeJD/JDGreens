@@ -12,7 +12,12 @@ import Razorpay from "razorpay";
 import { config } from 'dotenv';
 config();
 
-async function generateInvoice(res, order) {
+/**
+ * 
+ * @param {express.Response} res 
+ * @param {Order} order
+ */
+async function generateInvoice(res, order, cart) {
   const doc = new PDFDocument();
   const filename = "Order Invoice.pdf";
 
@@ -42,21 +47,23 @@ async function generateInvoice(res, order) {
   doc.moveDown();
 
   doc.moveDown(); // Move down after the title
-  doc.font("Helvetica-Bold").text(`Invoice`, { font: 10, align: "center", margin: 10 });
-  doc.font("Helvetica-Bold").text(`On ${order.createdAt}`, { font: 14, align: "center", margin: 10 });
+  doc.font("Helvetica-Bold").text(`Invoice`, { font: 14, align: "center", margin: 10 });
+  doc.font("Helvetica-Bold").text(`${order.createdAt}`, { font: 8, align: "center", margin: 10 });
 
   doc.moveDown(); // Move down after the title
   const tableData = {
     headers: [
       "Product",
       "Price",
-      "Quantity"
+      "Quantity",
+      "Subtotal"
     ],
 
     rows: order.items.map((productDetail) => [
       productDetail?.productName,
-      '$ ' + productDetail?.price,
-      productDetail?.quantity
+      '₹ ' + productDetail?.price,
+      productDetail?.quantity,
+      '₹ ' + (productDetail.price * productDetail.quantity)
     ])
   };
 
@@ -69,9 +76,21 @@ async function generateInvoice(res, order) {
     textMargin: 5, // Margin between text and cell border
   });
 
-  doc.text(`Total Price: $${order.total}`, { font: 10 });
-  doc.text(`Amount Payable: $${order.amountPayable}`, { font: 10 });
+  
+  let shippingPrice = "₹ 0 (Free)";
+  console.log(order.shippingOption);
+  if (order.shippingOption === 'Express') {
+    shippingPrice = "₹ 50 (Express)";
+  } else if (order.shippingOption === 'Next') {
+    shippingPrice = "₹100 (Next Day)";
+  }
 
+  const totalPrice = order.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+  doc.text(`Product Total: ₹${totalPrice}`, { font: 10 });
+  doc.text(`- Discount: ₹${order.discountAmount}`, { font: 10 });
+  doc.text(`Total Price: ₹${totalPrice - order.discountAmount}`, { font: 10 });
+  doc.text(`+ Shipping Charges: ₹${shippingPrice}`, { font: 10 });
+  doc.text(`Amount Payable: ₹${order.amountPayable}`, { font: 10 });
   // Finalize the PDF document
   doc.end();
 }
@@ -79,31 +98,33 @@ async function generateInvoice(res, order) {
 export async function GenerateOrderInvoiceAsPDF(req, res) {
   const { orderId } = req.params;
   const order = await Order.findOne({ _id: orderId });
+
   generateInvoice(res, order);
 }
 
-/**
- * 
- * @param {Coupon} coupon 
- * @param {Number} totalPrice 
- * @returns 
- */
-function getDiscountValue(coupon, totalPrice) {
+function calculateDiscount(coupon, totalPrice) {
+  const data = { eligible: false, discount: 0 };
+
   if (coupon.discountType === 'FLAT') {
-    // A FLAT coupon maybe applied only if the total price >= discount value * 5
-    // eg: For a flat discount of $100, the user has to shop for minimum ($100 x 5 = $500) 
-    if ((coupon.discountValue * 5) >= totalPrice) {
-      return coupon.discountValue;
-    } else {
-      throw new Error(`Minimum of ${(coupon.discountValue * 5)} for this purchase.`)
+    //* Eligibility Criteria:
+    // A FLAT coupon maybe applied only if the total price >= discount value x 5
+    // eg: For a flat discount of $100, the user has to shop for minimum ($100 x 5 = $500)
+    if (totalPrice >= (coupon.discountValue * 5)) {
+      data.eligible = true;
+      data.discount = coupon.discountValue;
     }
   } else if (coupon.discountType === 'PERCENTAGE') {
+    //* Elgibility Criteria:
+    // None
+    //* Note:
+    // Allowed Discount = min(maxDiscount, discountAmount)
     const amountToDiscount = (totalPrice * coupon.discountValue) / 100;
-    const allowedDiscount = Math.min(amountToDiscount, coupon.maxDiscount);
-    return allowedDiscount;
-  } else {
-    throw new Error("No valid coupon given.")
+    const allowedDiscount = Math.min(amountToDiscount, coupon.maxDiscount); 
+    data.eligible = true;
+    data.discount = allowedDiscount;
   }
+
+  return data;
 }
 
 var razorPayInstance = new Razorpay({ key_id: process.env.RAZORPAY_ID_KEY, key_secret: process.env.RAZORPAY_SECRET_KEY });
@@ -152,28 +173,24 @@ export async function PlaceOrderForPayment(req, res) {
 
   const user = await User.findOne({ _id: userId });
   const ourCart = await Cart.findOne({ user: userId });
-  let totalPrice = findTotalPrice(ourCart);
-  const cartTotal = totalPrice;
-  if (shippingOption === '50') {
-    totalPrice += 50;
-  } else if (shippingOption === '100') {
-    totalPrice += 100;
-  }
+
+  /** The summation of all products in the cart.  */
+  const totalPrice = findTotalPrice(ourCart);
+  
   const coupon = await Coupon.findOne({ code: couponCode });
+  let discountAmount = 0;
   if (coupon) {
-    try {
-      const discountAmount = getDiscountValue(coupon, cartTotal);
-      totalPrice -= discountAmount;
-    } catch (err) {
-      // Coupon could not be applied
-      console.log("A coupon could not be applied.");
-      console.error(err);
+    const { eligible, discount } = calculateDiscount(coupon, totalPrice);
+    if (eligible) {
+      discountAmount = discount;
     }
   }
+  const shippingCost = (shippingOption === '50' || shippingOption === '100') ? Number(shippingOption) : 0;
+  const totalPriceAfterDiscountAndShipping = (totalPrice - discountAmount) + shippingCost;
 
   try {
     var options = {
-      amount: totalPrice * 100, // Convert amount to the smallest currency unit (e.g., paise in INR)
+      amount: totalPriceAfterDiscountAndShipping * 100, // Convert amount to the smallest currency unit (e.g., paise in INR)
       currency: "INR",
       receipt: "order_rcptid_11",
     };
@@ -212,49 +229,49 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
 
   const user = await User.findOne({ _id: userId });
   const ourCart = await Cart.findOne({ user: userId });
-  let totalPrice = findTotalPrice(ourCart);
 
   const newOrder = {};
   newOrder.user = userId;
+
+  /** The summation of all products in the cart.  */
+  const totalPrice = findTotalPrice(ourCart);
+  
+  // Apply coupon.
+  const coupon = await Coupon.findOne({ code: couponCode });
+  let discountAmount = 0;
+  if (coupon) {
+    // todo: Check if cuopon is valid, not used before.
+    const { eligible, discount } = calculateDiscount(coupon, totalPrice);
+    if (eligible) {
+      discountAmount = discount;
+      coupon.usedBy.push(userId);
+      coupon.usageLimit && coupon.usageLimit--;
+    }
+  }
+  const totalPriceAfterDiscount = totalPrice - discountAmount;
+  
+  // Calculate shipping cost.
+  let shippingCost = 0;
   if (shippingOption === '0') {
     newOrder.shippingOption = 'Free';
   } else if (shippingOption === '50') {
     newOrder.shippingOption = 'Express';
-    totalPrice += 50;
+    shippingCost = 50;
   } else if (shippingOption === '100') {
     newOrder.shippingOption = "Next";
-    totalPrice += 100;
+    shippingCost = 100;
   }
-
-  /* Apply coupon, if any... */
-  console.log(couponCode, "was used as a coupon code.")
-  const coupon = await Coupon.findOne({ code: couponCode });
-  console.log(coupon ? "Coupon was found" : "Coupon was not found.")
-  if (coupon) {
-    // todo: Check if cuopon is valid, not used before.
-    try {
-      const discountAmount = getDiscountValue(coupon, totalPrice);
-      newOrder.discountAmount = discountAmount;
-      newOrder.amountPayable = totalPrice - discountAmount;
-      coupon.usedBy.push(userId);
-      coupon.usageLimit && coupon.usageLimit--;
-      await coupon.save();
-    } catch (err) {
-      console.error(err);
-      console.log("Coupon could not be applied.");
-    }
-
-  } else {
-    newOrder.amountPayable = totalPrice;
-  }
+  
+  const amountPayableAfterDiscountAndShipping = totalPriceAfterDiscount + shippingCost;
+  
+  newOrder.total = totalPrice;
+  newOrder.discountAmount = discountAmount;
+  newOrder.amountPayable = amountPayableAfterDiscountAndShipping;
 
   newOrder.status = "Confirmed";
 
   newOrder.paymentMethod = paymentOption.toLowerCase();
   if (newOrder.paymentMethod === 'upi') {
-    console.log("[razorpay] triggered from placeOrderFromCheckout");
-    console.log("Awaiting Payment: ",req.session.awaitingPayment)
-    console.log("Order ID: ",req.session.orderId)
     if (req.session.awaitingPayment) {
       const orderId = req.session.orderId;
       if (!orderId) {
@@ -277,28 +294,25 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
       return res.status(500).send({ error: "not awaiting payment" });
     }
   } else if (newOrder.paymentMethod === 'wallet') {
-    if (user.wallet < newOrder.amountPayable) {
+    if (user.wallet < amountPayableAfterDiscountAndShipping) {
       return res.status(400).send({ error: "insufficient fund" });
     }
 
-    user.wallet -= newOrder.amountPayable;
+    user.wallet -= amountPayableAfterDiscountAndShipping;
     user.walletTransactions.push({
       createdAt: new Date(),
-      amount: -newOrder.amountPayable,
+      amount: -amountPayableAfterDiscountAndShipping,
       type: "order"
     });
   } else if (newOrder.paymentMethod === 'cod') {
-    if (totalPrice > 2000) {
+    if (totalPriceAfterDiscount > 2000) {
       return res.status(400).send({ error: "COD not allowed for above Rs. 2000" });
     }
   }
 
-  newOrder.total = totalPrice;
-
   const existingAddressIndex = user.address.findIndex((address) => address._id.equals(addressOption));
   if (existingAddressIndex === -1) {
-    res.sendStatus(400);
-    return;
+    return res.status(400).send({ error: "Invalid address" });
   }
 
   const existingAddress = user.address[existingAddressIndex];
@@ -326,8 +340,10 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
     let order = await Order.create(newOrder);
 
     ourCart.products = [];
+
     await ourCart.save();
     await user.save();
+    coupon && await coupon.save();
 
     res.redirect(`/user/orders/${order._id}`)
   } catch (err) {
@@ -569,7 +585,7 @@ export async function PostChangePasswordLoggedIn(req, res) {
     res.status(400).send({error: "password format is invalid"})
     return
   }
-  // todo: Validate the `newPassword` with Regex & Length check
+
 
   if (await bcrypt.compare(oldPassword, user.password)) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
