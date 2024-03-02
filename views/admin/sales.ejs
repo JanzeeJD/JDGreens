@@ -16,7 +16,9 @@
               <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3" style="display:flex; justify-content: space-between;">
                 <div>
                   <h6 class="text-white text-capitalize ps-3">Sales Report</h6>
-                  <button class="btn btn-outline-primary btn-sm mb-0 me-3" id="generateSalesReportButton">Generate Sales Report</button>
+                </div>
+                <div style="margin-right: 2rem">
+                  <button class="btn btn-outline-white btn-sm mb-0 me-3" id="generateSalesReportButton"><i class="fa fa-clipboard" style="font-size:1rem;vertical-align: middle;"></i>  Generate Sales Report</button>
                 </div>
               </div>
             </div>
@@ -25,20 +27,21 @@
                 <table class="table align-items-center mb-0">
                   <thead>
                     <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">OrderId</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Products</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Order Date</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Discount</th>
+                      <th class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">OrderId</th>
+                      <th class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Products</th>
+                      <th class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Total</th>
+                      <th class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Payable</th>
+                      <th class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                      <th class="text-uppercase text-center text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Order Date</th>
                     </tr>
                   </thead>
                   <tbody>
+                    <% locals.orders.forEach(order => { %>
                       <tr>
-                        <td>orderId</td>
+                        <td class="text-center"><%= order._id.toString().slice(0, 6) %></td>
                         <td>
-                          <details>
-                            <summary>View Products</summary>
+                          <!-- <details> -->
+                            <!-- <summary>View Products</summary> -->
                             <table class="table sub-table">
                               <thead>
                                 <tr>
@@ -46,52 +49,29 @@
                                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Name</th>
                                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Qty</th>
                                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Price</th>
-                                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Discount</th>
+                                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Subtotal</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td>ProductID</td>
-                                  <td>Name</td>
-                                  <td>Qty</td>
-                                  <td>Price</td>
-                                  <td>Discount</td>
-                                </tr>
-                                <tr>
-                                  <td>ProductID</td>
-                                  <td>Name</td>
-                                  <td>Qty</td>
-                                  <td>Price</td>
-                                  <td>Discount</td>
-                                </tr>
-                                <tr>
-                                  <td>ProductID</td>
-                                  <td>Name</td>
-                                  <td>Qty</td>
-                                  <td>Price</td>
-                                  <td>Discount</td>
-                                </tr>
-                                <tr>
-                                  <td>ProductID</td>
-                                  <td>Name</td>
-                                  <td>Qty</td>
-                                  <td>Price</td>
-                                  <td>Discount</td>
-                                </tr>
-                                <tr>
-                                  <td>ProductID</td>
-                                  <td>Name</td>
-                                  <td>Qty</td>
-                                  <td>Price</td>
-                                  <td>Discount</td>
-                                </tr>
+                                <% order.items.forEach(product => { %>
+                                  <tr>
+                                    <td><%= product.productId.toString().slice(0, 6) %></td>
+                                    <td><%= product.productName %></td>
+                                    <td><%= product.quantity %></td>
+                                    <td><%= product.price %></td>
+                                    <td><%= product.price * product.quantity %></td>
+                                  </tr>
+                                <% }) %>
                               </tbody>
                             </table>
-                          </details>
+                          <!-- </details> -->
                         </td>
-                        <td>200</td>
-                        <td>status</td>
+                        <td class="text-center"><%= order.total %></td>
+                        <td class="text-center"><%= order.amountPayable %></td>
+                        <td class="text-center"><%= order.status %></td>
+                        <td class="text-center"><%= new Date(order.createdAt).toLocaleDateString('en-GB') %></td>
                       </tr>
+                    <% }) %>
                   </tbody>
                 </table>
               </div>
@@ -117,7 +97,7 @@
 
 generateSalesReportButton.addEventListener('click', async () => {
       const { value: formValues } = await Swal.fire({
-        title: "Multiple inputs",
+        title: "Enter Dates For sales Report",
         html: `
           <input required type="date" id="startingDate" name="startingDate" style="display:inline;" class="swal2-input">
           <input required type="date" id="endingDate" name="endingDate" style="display:inline;" class="swal2-input">

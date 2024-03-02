@@ -67,10 +67,10 @@
                                     <h4>Sub Total</h4>
                                     <div class="ml-auto font-weight-bold"> ₹ <%= locals.userOrder.total %> </div>
                                 </div>
-                                <!-- <div class="d-flex">
+                                <div class="d-flex">
                                     <h4>Discount</h4>
-                                    <div class="ml-auto font-weight-bold"> ₹ 40 </div>
-                                </div> -->
+                                    <div class="ml-auto font-weight-bold"> - ₹ <%= locals.userOrder.discountAmount %> </div>
+                                </div>
                                 <hr class="my-1">
                                 <!-- <div class="d-flex">
                                     <h4>Coupon Discount</h4>
@@ -82,12 +82,18 @@
                                 </div> -->
                                 <div class="d-flex">
                                     <h4>Shipping Cost</h4>
-                                    <div class="ml-auto font-weight-bold" id="shippingCost"> Free </div>
+                                    <% if (locals.userOrder.shippingOption === 'Express') { %>
+                                        <div class="ml-auto font-weight-bold" id="shippingCost"> + ₹ 50 (Express) </div>
+                                    <% } else if (locals.userOrder.shippingOption === 'Next') { %>
+                                        <div class="ml-auto font-weight-bold" id="shippingCost"> + ₹ 100 (Next Day) </div>
+                                    <% } else { %>
+                                        <div class="ml-auto font-weight-bold" id="shippingCost"> Free </div>
+                                    <% } %>
                                 </div>
                                 <hr>
                                 <div class="d-flex gr-total">
                                     <h5>Grand Total</h5>
-                                    <div class="ml-auto h5" id="grandTotal" data-price="<%= locals.userOrder.total %>"> ₹ <%= locals.userOrder.total %> </div>
+                                    <div class="ml-auto h5" id="grandTotal" data-price="<%= locals.userOrder.total %>"> ₹ <%= locals.userOrder.amountPayable %> </div>
                                 </div>
                                 <hr> </div>
                         </div>

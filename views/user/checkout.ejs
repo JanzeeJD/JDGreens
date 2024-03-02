@@ -311,10 +311,10 @@
             $('#couponModal').modal('hide');
 
             couponDiscountText.innerText = "- ₹ " + selectedCoupon.value;
-            recalculateGrandTotal(shippingCostAsNumber, selectedCoupon.value);
-
+            
             couponCode.value = selectedCoupon.code;
             clearCouponButton.style.display = 'block';
+            recalculateGrandTotal(shippingCostAsNumber, selectedCoupon.value);
         })
         
         clearCouponButton.addEventListener('click', () => {
@@ -334,8 +334,10 @@
             grandTotalPrice += shippingCostAsNumber;
             console.log(`\t + Shipping Cost ₹ ${shippingCostAsNumber}`);
             console.log(`= ${grandTotalPrice}`)
-            console.log(`\t + Coupon Discount of ₹ ${couponDiscount}`);
-            grandTotalPrice -= couponDiscount;
+            if (couponCode.value === selectedCoupon.code) {
+                console.log(`\t - Coupon Discount of ₹ ${couponDiscount}`);
+                grandTotalPrice -= couponDiscount;
+            }
             console.log(`= ₹ ${grandTotalPrice}`)
             grandTotal.innerText = '₹' + grandTotalPrice;
 

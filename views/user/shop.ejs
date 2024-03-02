@@ -35,7 +35,7 @@
                                 <div class="toolbar-sorter-right">
                                     <span>Sort by </span>
                                     <select id="basic" class="selectpicker show-tick form-control" data-placeholder="$ USD">
-                                        <option value="na" >Nothing</option>
+                                        <option value="na" >Popularity</option>
                                         <!-- <option value="1">Popularity</option> -->
                                         <option <%= locals.searchParams.get('sort_by') === 'highToLow' && "selected" %> value="highToLow">High Price → Low Price</option>
                                         <option <%= locals.searchParams.get('sort_by') === 'lowToHigh' && "selected" %> value="lowToHigh">Low Price → High Price</option>

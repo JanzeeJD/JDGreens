@@ -168,7 +168,7 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          alert("A new OTP was sent.");
+          alertOk("A new OTP was sent.");
           // resend button click cheyyumbo, veendum counter run cheyyanam
           startCounter(60);
         } else {
