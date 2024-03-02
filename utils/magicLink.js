@@ -8,7 +8,7 @@ export function createMagicLink(baseURL, userId) {
 
   // todo: Put the secret in process.env
   // Sign the payload with a secret key, add expiration time, and create the JWT token
-  const token = jwt.sign(payload, "jancy's little secret", { expiresIn: '5m' });
+  const token = jwt.sign(payload, process.env.MAGICLINK_SECRET_KEY, { expiresIn: '5m' });
 
   // Construct the magic link by appending the token to the baseURL
   const magicLink = `${baseURL}/${token}`;
@@ -19,7 +19,7 @@ export function createMagicLink(baseURL, userId) {
 export function verifyMagicLink(token) {
   try {
     // Verify the token using the secret key
-    const decoded = jwt.verify(token, "jancy's little secret");
+    const decoded = jwt.verify(token, process.env.MAGICLINK_SECRET_KEY);
     return decoded.userId;
 
   } catch (error) {
