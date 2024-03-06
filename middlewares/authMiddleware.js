@@ -23,6 +23,7 @@ export function applyLocals(req, res, next) {
   
   let searchParams = new URLSearchParams(req.query);
   res.locals.searchParams = searchParams;
+  res.locals.profileName = req.session?.name ? req.session.name.split(' ')[0] : "Profile";
   
   searchParams.delete('page');
   res.locals.queryParams = searchParams.toString();
