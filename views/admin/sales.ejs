@@ -95,28 +95,46 @@
         
         const generateSalesReportButton = document.getElementById('generateSalesReportButton');
 
-generateSalesReportButton.addEventListener('click', async () => {
-      const { value: formValues } = await Swal.fire({
-        title: "Enter Dates For sales Report",
-        html: `
-          <input required type="date" id="startingDate" name="startingDate" style="display:inline;" class="swal2-input">
-          <input required type="date" id="endingDate" name="endingDate" style="display:inline;" class="swal2-input">
-        `,
-        focusConfirm: false,
-        preConfirm: () => {
-          return [
-            document.getElementById("startingDate").value,
-            document.getElementById("endingDate").value
-          ];
-      }
-    });
+        generateSalesReportButton.addEventListener('click', async () => {
+              const { value: formValues } = await Swal.fire({
+                title: "Enter Dates For sales Report",
+                html: `
+                  <input required type="date" id="startingDate" name="startingDate" style="display:inline;" class="swal2-input">
+                  <input required type="date" id="endingDate" name="endingDate" style="display:inline;" class="swal2-input">
+                `,
+                focusConfirm: false,
+                preConfirm: () => {
+                  return [
+                    document.getElementById("startingDate").value,
+                    document.getElementById("endingDate").value
+                  ];
+              }
+            });
 
-    if (formValues[0] && formValues[1]) {
-      downloadSalesReport('pdf', formValues[0], formValues[1]);
-    } else {
-      Swal.fire("Give proper dates!");
+            if (formValues[0] && formValues[1]) {
+              selectmode({ startDate: formValues[0], endDate: formValues[1] })
+            } else {
+              Swal.fire("Give proper dates!");
+            }
+        });
+
+
+function selectmode({ startDate, endDate }) {
+  Swal.fire({
+    title: 'Download Sales Report',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'PDF',
+    cancelButtonText: 'Excel',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      downloadSalesReport('pdf', startDate, endDate);
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      downloadSalesReport('excel', startDate, endDate);
     }
-});
+  })
+}
 
 function downloadSalesReport(format, startingDate, endingDate) {
 

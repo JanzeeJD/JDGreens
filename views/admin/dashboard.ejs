@@ -275,6 +275,20 @@
            </div>
         </div>
      </div>
+     <div>
+      <h2>Best Selling Products</h2>
+      <ul>
+        <% locals.bestSellingProducts.forEach(product => { %>
+          <li><%= product.productName %> (<%= product.totalQtySold %> units sold)</li>
+        <% }) %>
+      </ul>
+      <h2>Best Selling Categories</h2>
+      <ul>
+        <% locals.bestSellingCategories.forEach(category => { %>
+          <li><%= category.productCategoryName %> (<%= category.totalQtySold %> products sold)</li>
+        <% }) %>
+      </ul>
+     </div>
 
     </div>
     </div>

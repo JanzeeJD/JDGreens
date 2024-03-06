@@ -20,16 +20,16 @@
                     <p><strong>Payment Method:</strong> <%= locals.order.paymentMethod %></p>
                     <p>
                       <strong>Order Status:</strong>
-                      <select id="orderStatusDropdown" data-order-id="<%= order._id %>">
-                        <option value="pending" selected="<%= locals.order.status === 'pending' %>">Pending</option>
-                        <option value="confirmed" selected="<%= locals.order.status === 'confirmed' %>">Confirmed</option>
-                        <option value="cancelled" selected="<%= locals.order.status === 'cancelled' %>">Cancelled</option>
-                        <option value="delivered" selected="<%= locals.order.status === 'delivered' %>">Delivered</option>
-                        <option value="returned" selected="<%= locals.order.status === 'returned' %>">Returned</option>
+                      <select id="orderStatusDropdown" data-order-id="<%= locals.order._id %>">
+                        <option value="Pending" <%= locals.order.status === 'Pending' && "selected" %>>Pending</option>
+                        <option value="Confirmed" <%= locals.order.status === 'Confirmed' && "selected" %>>Confirmed</option>
+                        <option value="Cancelled" <%= locals.order.status === 'Cancelled' && "selected" %>>Cancelled</option>
+                        <option value="Delivered" <%= locals.order.status === 'Delivered' && "selected" %>>Delivered</option>
+                        <option value="Returned" <%= locals.order.status === 'Returned' && "selected" %>>Returned</option>
                       </select>
                     </p>
                     <p><strong>Total Price:</strong> ₹<%= locals.order.total %></p>
-                    <button id="cancelOrderBtn" data-id="<%= order._id %>">Cancel Order</button>
+                    <p><strong>Amount Payable:</strong> ₹<%= locals.order.amountPayable %></p>
                   </div>
                 </div>
               </div>
@@ -102,7 +102,7 @@
    <script>
   const orderStatusDropdown = document.getElementById('orderStatusDropdown');
   orderStatusDropdown.addEventListener('change', (e) => {
-    fetch(`/admin/users/orders/${e.target.dataset.id}`, {
+    fetch(`/admin/users/orders/${e.target.dataset.orderId}`, {
       method: "PATCH",
       headers: {
         "content-type": "application/json"
@@ -119,7 +119,7 @@
         console.error(data);
       }
     })
-    .catch(alert);
+    .catch(alertNotOk);
   });
 </script>
 </body>
