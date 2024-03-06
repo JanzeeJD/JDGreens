@@ -3,54 +3,57 @@
 import mongoose, { Schema } from 'mongoose';
 import paginate from 'mongoose-paginate-v2';
 
-
 const ProductSchema = new mongoose.Schema({
-name:{
-    type:String,
-    required:true
+  name: {
+    type: String,
+    required: true
   },
-  price:{
-    type:Number,
-    required:true
-  },  
-  category:{
-    type:Schema.Types.ObjectId,
+  price: {
+    type: Number,
+    required: true
+  },
+  discount: {
+    type: Number,
+    default: 0
+  },
+  category: {
+    type: Schema.Types.ObjectId,
     ref: "Category",
-    required:true
+    required: true
   },
-  stock:{
-    type:Number,
-    required:true
+  stock: {
+    type: Number,
+    required: true
   },
-  description:{
-    type:String,
-    required:true
+  description: {
+    type: String,
+    required: true
   },
-  images:[{
-    type:String,
-    required:true
+  images: [{
+    type: String,
+    required: true
   }],
-  rating:[{
-    userId:{
-    type:Schema.Types.ObjectId,
-    required:true
+  rating: [{
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true
     },
-    value:{
-      type:Number,
-      required:true
+    value: {
+      type: Number,
+      required: true
     }
   }],
-  isListed:{
-    type:Boolean,
-    required:true,
+  isListed: {
+    type: Boolean,
+    required: true,
     default: true
   },
   isDeleted: {
     type: Boolean,
     required: true,
     default: false
-  } 
-}, { 
+  }
+}, {
   timestamps: true
 });
 
