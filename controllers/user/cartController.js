@@ -6,7 +6,7 @@ import Product from '../../models/Product.js';
 export function findTotalPrice(cart) {
     let total = 0;
     for (let i = 0; i < cart.products.length; i++) {
-        total += cart.products[i].productQty * cart.products[i].price;
+        total += cart.products[i].productQty * (cart.products[i].price - (cart.products[i].discount ?? 0));
     }
     return total;
 }
@@ -49,6 +49,7 @@ export async function AddToCart(req, res) {
         ourCart.products.push({
             productId,
             productQty: 1,
+            discount: product.discount ?? 0,
             name: product.name,
             image: product.images[0],
             price: product.price,
@@ -99,7 +100,7 @@ export async function UpdateProductQty(req, res) {
     await ourCart.save();
     let newTotalPrice = findTotalPrice(ourCart);
     // todo: cart save()
-    res.status(200).send({ success: true, stock: product.stock, newPrice: product.price * qty, newTotalPrice })
+    res.status(200).send({ success: true, stock: product.stock, newPrice: (product.price - (product.discount ?? 0)) * qty, newTotalPrice })
 
     // res.status(200).send({ success: true, newPrice: product.price * qty });
 }

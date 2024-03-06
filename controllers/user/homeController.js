@@ -7,6 +7,7 @@ import Product from '../../models/Product.js';
 import Category from '../../models/Category.js';
 import Cart from '../../models/Cart.js';
 import { createMagicLink, verifyMagicLink } from '../../utils/magicLink.js';
+import Banner from '../../models/Banner.js';
 
 /**
  * **Route:** GET /
@@ -57,6 +58,7 @@ export async function PostLogin(req, res) {
     req.session.loggedIn = true;
     req.session.email = req.body.email;
     req.session.userId = user._id.toString();
+    req.session.name = user.name;
     res.redirect('/');
 
   } else {
@@ -283,8 +285,9 @@ export async function GetHomePage(req, res) {
     req.session.wasReferred = false;
     res.locals.wasReferred = true;
   }
+  const banners = await Banner.find();
   const products = await Product.find().limit(4);
-  res.render('user/index', { products });
+  res.render('user/index', { products, banners });
 }
 
 

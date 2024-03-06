@@ -10,6 +10,7 @@ import PDFDocument from 'pdfkit-table';
 import bcrypt from 'bcrypt';
 import Razorpay from "razorpay";
 import { config } from 'dotenv';
+import { markSale } from '../../utils/analytics.js';
 config();
 
 /**
@@ -61,9 +62,9 @@ async function generateInvoice(res, order, cart) {
 
     rows: order.items.map((productDetail) => [
       productDetail?.productName,
-      '₹ ' + productDetail?.price,
+      'INR  ' + productDetail?.price,
       productDetail?.quantity,
-      '₹ ' + (productDetail.price * productDetail.quantity)
+      'INR  ' + (productDetail.price * productDetail.quantity)
     ])
   };
 
@@ -77,20 +78,20 @@ async function generateInvoice(res, order, cart) {
   });
 
   
-  let shippingPrice = "₹ 0 (Free)";
+  let shippingPrice = "INR  0 (Free)";
   console.log(order.shippingOption);
   if (order.shippingOption === 'Express') {
-    shippingPrice = "₹ 50 (Express)";
+    shippingPrice = "INR  50 (Express)";
   } else if (order.shippingOption === 'Next') {
-    shippingPrice = "₹100 (Next Day)";
+    shippingPrice = "INR 100 (Next Day)";
   }
 
   const totalPrice = order.items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  doc.text(`Product Total: ₹${totalPrice}`, { font: 10 });
-  doc.text(`- Discount: ₹${order.discountAmount}`, { font: 10 });
-  doc.text(`Total Price: ₹${totalPrice - order.discountAmount}`, { font: 10 });
-  doc.text(`+ Shipping Charges: ₹${shippingPrice}`, { font: 10 });
-  doc.text(`Amount Payable: ₹${order.amountPayable}`, { font: 10 });
+  doc.text(`Product Total: INR ${totalPrice}`, { font: 10 });
+  doc.text(`- Discount: INR ${order.discountAmount}`, { font: 10 });
+  doc.text(`Total Price: INR ${totalPrice - order.discountAmount}`, { font: 10 });
+  doc.text(`+ Shipping Charges: INR ${shippingPrice}`, { font: 10 });
+  doc.text(`Amount Payable: INR ${order.amountPayable}`, { font: 10 });
   // Finalize the PDF document
   doc.end();
 }
@@ -170,7 +171,7 @@ export async function GetCheckoutPage(req, res) {
 export async function PlaceOrderForPayment(req, res) {
   const { userId } = req.session;
   const { addressOption, shippingOption, paymentOption, couponCode } = req.body;
-
+  
   const user = await User.findOne({ _id: userId });
   const ourCart = await Cart.findOne({ user: userId });
 
@@ -332,9 +333,15 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
       productId: ourCart.products[i].productId,
       productName: ourCart.products[i].name,
       quantity: ourCart.products[i].productQty,
-      price: ourCart.products[i].price,
+      price: ourCart.products[i].price - (ourCart.products[i].discount ?? 0),
     })
+
+    // Sales Analytics
+    await markSale(new Date(), ourCart.products[i].productId, ourCart.products[i].productQty);
   }
+
+  // todo: optimize
+  // await markSales(new Date(), ourCart);
 
   try {
     let order = await Order.create(newOrder);
@@ -353,8 +360,10 @@ export async function PlaceOrderFromCheckoutPost(req, res) {
 }
 
 
-export function GetAccountPage(req, res) {
-  res.render('user/my-account')
+export async function GetAccountPage(req, res) {
+  const { userId } = req.session;
+  const user = await User.findOne({ _id: userId });
+  res.render('user/my-account', { user })
 }
 
 export async function GetProfilePage(req, res) {
@@ -421,7 +430,10 @@ export async function AddAddressPost(req, res) {
   user.address.push(newAddress);
   await user.save();
 
-  res.redirect(req.session.addressFrom ?? '/user/address');
+  const goto = req.session.addressFrom ?? '/user/address';
+  req.session.addressFrom = null;
+
+  res.redirect(goto);
 }
 
 
@@ -496,7 +508,10 @@ export async function EditAddressPost(req, res) {
 
   await user.save();
 
-  res.redirect(req.session.addressFrom ?? '/user/address');
+  const goto = req.session.addressFrom ?? '/user/address';
+  req.session.addressFrom = null;
+
+  res.redirect(goto);
 }
 
 export async function DeleteAddress(req, res) {
@@ -555,14 +570,16 @@ export async function PatchOrderDetailPage(req, res) {
     order.isCancelled = isCancelled;
     order.status = status;
     await order.save();
-    // if order cancelled amount added to wallet
-    if (order.paymentMethod === 'upi' || order.paymentMethod === 'wallet') {
-      user.wallet = user.wallet + order.amountPayable
-      user.walletTransactions.push({
-        createdAt: new Date(),
-        amount: order.amountPayable,
-        type: "refund"
-      });
+    if (status === 'Cancelled' || status === 'Returned') {
+      // if order cancelled amount added to wallet
+      if (order.paymentMethod === 'upi' || order.paymentMethod === 'wallet') {
+        user.wallet = user.wallet + order.amountPayable
+        user.walletTransactions.push({
+          createdAt: new Date(),
+          amount: order.amountPayable,
+          type: `Refund (${status})`
+        });
+      }
     }
     await user.save();
     res.status(200).json({
