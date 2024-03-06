@@ -22,8 +22,6 @@ import {  GetShopPage,
 
 const router = Router();
 
-
-
 router.post('/payment', PlaceOrderForPayment)
 
 router.get('/checkout',GetCheckoutPage)
