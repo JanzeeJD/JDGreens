@@ -28,6 +28,9 @@
     <div class="my-account-box-main">
         <div class="container">
             <div class="my-account-page">
+                <h1><strong>Your Referral Code:</strong></h1>
+                <h1 id="referral"><%= locals.user.referralCode %></h1> 
+                <button id="copyRefferal">Copy</button>
                 <div class="row">
                     <div class="col-lg-4 col-md-12">
                         <div class="account-box">
@@ -130,6 +133,16 @@
     <script src="/js/form-validator.min.js"></script>
     <script src="/js/contact-form-script.js"></script>
     <script src="/js/custom.js"></script>
+    <script>
+        const referralHead = document.getElementById('referral')
+        const copyRefferalBtn = document.getElementById('copyRefferal')
+        function copyToClipboard (){
+            const referralCode = referralHead.innerText
+            alertOk("Code copied")
+            navigator.clipboard.writeText(referralCode);
+        }
+        copyRefferalBtn.addEventListener('click',copyToClipboard)
+    </script>
 </body>
 
 </html>

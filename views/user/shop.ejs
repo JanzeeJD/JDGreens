@@ -63,9 +63,11 @@
                                             <div class="col-sm-6 col-md-6 col-lg-4 col-xl-4">
                                                 <div class="products-single fix">
                                                     <div class="box-img-hover">
-                                                        <div class="type-lb">
-                                                            <p class="sale">Sale</p>
-                                                        </div>
+                                                        <% if (product.discount && product.discount > 0) { %>                                                         
+                                                            <div class="type-lb">
+                                                                <p class="sale">Sale</p>
+                                                            </div>
+                                                        <% } %>
                                                         <img src="/uploads/products/<%= product.images[0] %>" class="img-fluid" style="aspect-ratio: 1/1;" alt="Image">
                                                         <div class="mask-icon">
                                                             <ul>
@@ -77,7 +79,11 @@
                                                     </div>
                                                     <div class="why-text">
                                                         <h4><%= product.name %></h4>
-                                                        <h5>₹ <%= product.price %></h5>
+                                                        <% if (product.discount && product.discount > 0) { %>     
+                                                            <h5><s style="color: lightgray">₹ <%= product.price %></s> ₹ <%= product.price - product.discount %></h5>
+                                                        <% } else { %>
+                                                            <h5>₹ <%= product.price %></h5>
+                                                        <% } %>
                                                      
                                                     </div>
                                                 </div>

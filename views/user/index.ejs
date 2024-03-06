@@ -11,42 +11,59 @@
     <!-- Start Slider -->
     <div id="slides-shop" class="cover-slides">
         <ul class="slides-container">
-            <li class="text-center">
-                <img src="images/banner-01.jpg" alt="">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h1 class="m-b-20"><strong>Explore Nature's Palette <br> with JDGreens</strong></h1>
-                            <p class="m-b-40">Transform your space with our exquisite collection of plants. Experience the beauty of nature at your fingertips.</p>
-                            <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
+           <% if (locals.banners && locals.banners.length > 0) { %>
+                <% locals.banners.forEach(banner => { %>
+                    <li class="text-center">
+                        <img style="aspect-ratio: 16/9;" src="/uploads/banners/<%= banner.imageURL %>" alt="">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h1 class="m-b-20"><strong><%= banner.firstLine %> <br> <%= banner.secondLine %></strong></h1>
+                                    <p class="m-b-40"><%= banner.description %></p>
+                                    <p><a class="btn hvr-hover" href="<%= banner.href %>"><%= banner.buttonText %></a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                <% }) %>
+           <% } else { %>
+                <li class="text-center">
+                    <img src="images/banner-01.jpg" alt="">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h1 class="m-b-20"><strong>Explore Nature's Palette <br> with JDGreens</strong></h1>
+                                <p class="m-b-40">Transform your space with our exquisite collection of plants. Experience the beauty of nature at your fingertips.</p>
+                                <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </li>
-            <li class="text-center">
-                <img src="images/banner-02.jpg" alt="">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h1 class="m-b-20"><strong>Breathe Life Into Your Home <br> with JDGreens</strong></h1>
-                            <p class="m-b-40">Immerse yourself in the freshness of our plants. Elevate your living spaces and bring nature indoors.</p>
-                            <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
+                </li>
+                <li class="text-center">
+                    <img src="images/banner-02.jpg" alt="">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h1 class="m-b-20"><strong>Breathe Life Into Your Home <br> with JDGreens</strong></h1>
+                                <p class="m-b-40">Immerse yourself in the freshness of our plants. Elevate your living spaces and bring nature indoors.</p>
+                                <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </li>
-            <li class="text-center">
-                <img src="images/banner-03.jpg" alt="">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h1 class="m-b-20"><strong>Green Dreams, Vibrant Reality <br> at JDGreens</strong></h1>
-                            <p class="m-b-40">Turn your gardening dreams into reality with JDgreenz. Discover a world of lush greenery and plant happiness.</p>
-                            <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
+                </li>
+                <li class="text-center">
+                    <img src="images/banner-03.jpg" alt="">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h1 class="m-b-20"><strong>Green Dreams, Vibrant Reality <br> at JDGreens</strong></h1>
+                                <p class="m-b-40">Turn your gardening dreams into reality with JDgreenz. Discover a world of lush greenery and plant happiness.</p>
+                                <p><a class="btn hvr-hover" href="/shop">Shop Now</a></p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </li>
+                </li>
+            <% } %>
         </ul>
         <div class="slides-navigation">
             <a href="#" class="next"><i class="fa fa-angle-right" aria-hidden="true"></i></a>

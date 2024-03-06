@@ -97,9 +97,12 @@
                                 </div>
                                 <hr> </div>
                         </div>
-                        <% if (!locals.userOrder.isCancelled) { %>
+                        <% if (!locals.userOrder.isCancelled && locals.userOrder.status !== 'Delivered' && locals.userOrder.status !== 'Returned') { %>
                             <div class="col-12 d-flex shopping-box"> <button id="cancelOrderBtn" data-id="<%= locals.userOrder._id %>" class="ml-auto btn hvr-hover text-white">Cancel Order</button> </div>
+                        <% } %>
+                        <% if (locals.userOrder.status === 'Delivered') { %>
                             <div class="col-12 d-flex shopping-box my-2"> <button id="downloadInvoiceBtn" data-order-id="<%= locals.userOrder._id %>" class="ml-auto btn hvr-hover text-white">Download Invoice</button> </div>
+                            <div class="col-12 d-flex shopping-box my-2"> <button id="returnBtn" data-order-id="<%= locals.userOrder._id %>" class="ml-auto btn hvr-hover text-white">Return Product</button> </div>
                         <% } %>
                     <!-- </div> -->
                 <!-- </div> -->
@@ -148,35 +151,59 @@
                 <script>
                     const cancelOrderBtn = document.getElementById('cancelOrderBtn');
                     const downloadInvoiceBtn = document.getElementById('downloadInvoiceBtn');
-                    cancelOrderBtn.addEventListener('click', (e) => {
-                    
-                    fetch(`/user/orders/${e.target.dataset.id}`, {
-                        method: "PATCH",
-                        headers: {
-                        "content-type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            status: "Cancelled",
-                            isCancelled: true
-                        })
-                    }).then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById('orderStatusText').innerText = "Cancelled";
-                            alertOk("Order Cancelled");
-                            cancelOrderBtn.style.display = "none";
-                            downloadInvoiceBtn.style.display = "none";
-                        } else {
-                            alertNotOk("An error occured.");
-                            console.error(data);
-                        }
-                    })
-                    .catch(alert);
+                    const returnBtn = document.getElementById('returnBtn');
+                    returnBtn && returnBtn.addEventListener('click', (e) => {
+                        fetch(`/user/orders/${e.target.dataset.orderId}`, {
+                            method: "PATCH",
+                            headers: {
+                                "content-type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                status: "Returned",
+                                isCancelled: false
+                            })
+                        }).then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    document.getElementById('orderStatusText').innerText = "Returned";
+                                    alertOk("Order Returned");
+                                    returnBtn.style.display = "none";
+                                    downloadInvoiceBtn.style.display = "none";
+                                } else {
+                                    alertNotOk("An error occured.");
+                                    console.error(data);
+                                }
+                            })
+                            .catch(alertNotOk);
+                    });
+
+                    cancelOrderBtn && cancelOrderBtn.addEventListener('click', (e) => {
+                        fetch(`/user/orders/${e.target.dataset.id}`, {
+                            method: "PATCH",
+                            headers: {
+                                "content-type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                status: "Cancelled",
+                                isCancelled: true
+                            })
+                        }).then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    document.getElementById('orderStatusText').innerText = "Cancelled";
+                                    alertOk("Order Cancelled");
+                                    cancelOrderBtn.style.display = "none";
+                                    downloadInvoiceBtn.style.display = "none";
+                                } else {
+                                    alertNotOk("An error occured.");
+                                    console.error(data);
+                                }
+                            })
+                            .catch(alertNotOk);
                     })
 
-
-                    downloadInvoiceBtn.addEventListener('click', (e) => {
-                        const {orderId} = e.target.dataset;
+                    downloadInvoiceBtn && downloadInvoiceBtn.addEventListener('click', (e) => {
+                        const { orderId } = e.target.dataset;
                         downloadInvoice(orderId);
                     });
 
@@ -189,10 +216,10 @@
                             headers: {
                                 'Content-Type': 'application/json',
                             }
-                            })
+                        })
                             .then(response => {
                                 if (!response.ok) {
-                                throw new Error('Network response was not ok');
+                                    throw new Error('Network response was not ok');
                                 }
                                 return response.blob(); // Use blob() to get the response as a Blob
                             })
@@ -204,7 +231,7 @@
                             .catch(error => {
                                 alertNotOk('Fetch error of invoice:', error);
                             });
-                        }
+                    }
                 </script>
                 
             </body>

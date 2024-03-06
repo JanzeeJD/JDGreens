@@ -87,7 +87,7 @@
                                 <% locals.cart.products.forEach(product => { %>                                        
                                     <div class="media mb-2 border-bottom">
                                         <div class="media-body"> <a href="/shop/<%= product.productId %>"> <%= product.name %></a>
-                                            <div class="small text-muted">Price: ₹<%= product.price %> <span class="mx-2">|</span> Qty: <%= product.productQty %> <span class="mx-2">|</span> Subtotal: <%= product.price * product.productQty %></div>
+                                            <div class="small text-muted">Price: ₹<%= product.price - (product.discount ?? 0) %> <span class="mx-2">|</span> Qty: <%= product.productQty %> <span class="mx-2">|</span> Subtotal: <%= (product.price - (product.discount ?? 0)) * product.productQty %></div>
                                         </div>
                                     </div>
                                 <% }) %>
@@ -406,12 +406,10 @@
             const paymentMode = form.paymentOption.value.toLowerCase();
 
             if (paymentMode === 'cod' || paymentMode === 'wallet') {
-                document.getElementById('placeOrderButton').addEventListener('click', function () {
-                    $('#orderPlacedModal').modal('show');
-                });
+                $('#orderPlacedModal').modal('show');
 
                 // Submit the form normally.
-                form.submit();
+                setTimeout(() => form.submit(), 2000);
                 return;
             }
 
@@ -449,7 +447,8 @@
                         image: "https://example.com/your_logo",
                         order_id: orderId,
                         handler: function (response) {
-                            alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
+                            console.log(response);
+                            alertOk('Payment successful! Payment ID: ' + response.razorpay_payment_id);
                             form.submit();
                         },
                         prefill: {
@@ -470,7 +469,7 @@
                     const RazorPayInstance = new Razorpay(options);
 
                     RazorPayInstance.on('payment.failed', (response) => {
-                        alert("Payment Failed - " + response.error.description);
+                        alertNotOk("Payment Failed - " + response.error.description);
                         console.error(response.error.code);
                         console.error(response.error.source);
                         console.error(response.error.step);

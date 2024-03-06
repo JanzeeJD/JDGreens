@@ -60,7 +60,7 @@
                                             <p>₹ <%= product.price %></p>
                                         </td>
                                         <td class="remove-pr">
-                                            <i style="cursor: pointer" class="fas fa-shopping-cart add-to-cart" data-id="<%= product._id %>"></i>
+                                            <i style="cursor: pointer" class="fas fa-shopping-cart add-to-cart" data-id="<%= product._id %>" data-stock="<%= product.stock %>"></i>
                                             <i style="cursor: pointer" class="fas fa-times remove-product" data-id="<%= product._id %>"></i>
                                         </td>
                                     </tr>
@@ -118,6 +118,12 @@
 
             if (e.target.classList.contains('add-to-cart')) {
                 const productId = e.target.dataset.id;
+                const productStock = Number(e.target.dataset.stock);
+                if (productStock === 0) {
+                    alertNotOk("This product is out of stock!");
+                    return;
+                }
+                
                 addToCart(productId);
             }
         })
