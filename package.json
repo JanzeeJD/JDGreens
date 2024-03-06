@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "supervisor index.js"
+    "start": "node --watch index.js"
   },
   "author": "Jancy",
   "license": "MIT",
