@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<%- include('partials/_head.ejs') %>
+
+<body class="g-sidenav-show bg-gray-200">
+  <%- include('partials/_navbar.ejs') %>
+  <%- include('partials/_asidebar.ejs') %>
+
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    
+    <!-- End Navbar -->
+    <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3" style="display:flex; justify-content: space-between;">
+                <div>
+                  <h6 class="text-white text-capitalize ps-3">Banner Management</h6>
+                </div>
+                <div style="margin-right: 2rem">
+                  <a class="btn btn-outline-white btn-sm mb-0 me-3"
+                  href="/admin/banner/add-banner"><i class="fa fa-plus" style="vertical-align: middle;"></i> New Banner</a>
+                </div>
+              </div>
+            </div>
+            <div class="card-body px-0 ps-3 pb-2">
+                <% if (locals.banners.length < 1) { %>
+                    <p>No banners added. Using preset static banners as fallback.</p>
+                <% } %>
+            </div>
+            <div class="ms-2 row mt-4">
+              <% locals.banners.forEach(banner => { %>               
+                <div id="<%= banner._id %>-row" class="col-lg-4 col-md-6 mt-4 mb-4">
+                   <div class="card z-index-2 ">
+                      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
+                         <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1">
+                            <div style="overflow: hidden;object-fit: cover;">
+                                <img style="width: 100%; aspect-ratio: 16/9;" src="/uploads/banners/<%= banner.imageURL %>" >
+                            </div>
+                            <!-- <div class="chart">
+                               <canvas id="chart-bars" class="chart-canvas" height="170"></canvas>
+                            </div> -->
+                         </div>
+                      </div>
+                      <div class="card-body">
+                         <h6 class="mb-0 "><%= banner.firstLine %> <%= banner.secondLine %></h6>
+                         <p class="text-sm "><%= banner.description ?? "No description provided." %></p>
+                         <hr class="dark horizontal">
+                         <div class="d-flex ">
+                          <button onclick="deleteBanner('<%= banner._id %>')">Delete</button>
+                            <!-- <i class="material-icons text-sm my-auto me-1">schedule</i> -->
+                            <!-- <p class="mb-0 text-sm"> campaign sent 2 days ago </p> -->
+                         </div>
+                      </div>
+                   </div>
+                </div>
+              <% }) %>
+             </div>
+          </div>
+        </div>
+      </div>
+      <%- include('partials/_footer.ejs') %>
+      </div>
+      
+    </div>
+  </main> 
+  <!--   Core JS Files   -->
+  <script>
+    function deleteBanner(bannerId) {
+      const confirmed = confirm("Are you sure you wish to delete this banner?");
+
+      if (!confirmed) {
+        return;
+      }
+
+      fetch(`/admin/banner/${bannerId}`, { method: "DELETE" })
+      .then(res => {
+        if (res.ok) {
+          document.getElementById(`${bannerId}-row`).remove()
+        } else {
+          alert("An error occured. Check console.");
+          console.error(res);
+        }
+      }).catch(err => {
+        alert("A fetch error occured. Check console.");
+        console.error(err);
+      });
+    }
+  </script>
+  <script src="/assets/js/core/popper.min.js"></script>
+  <script src="/assets/js/core/bootstrap.min.js"></script>
+  <script src="/assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="/assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="/assets/js/material-dashboard.min.js?v=3.1.0"></script>
+  <%- include('partials/_scripts.ejs') %>
+</body>
+
+</html>
