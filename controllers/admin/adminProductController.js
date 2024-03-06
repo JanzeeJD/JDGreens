@@ -53,7 +53,7 @@ export async function PostEditProductPage(req, res) {
   const stock = Number(req.body.productStock?.trim());
   const price = Number(req.body.productPrice?.trim());
 
-  // todo: exception handling...
+
   const imagesToDelete = JSON.parse(req.body.imagesToDelete);
   console.log("imagesToDelete", imagesToDelete);
 
@@ -89,7 +89,7 @@ export async function PostEditProductPage(req, res) {
   }
 
   // Check if stock is a positive number and less than 8 digits
-  if (!stock || stock < 0 || String(stock).length > 8) {
+  if (isNaN(stock) || stock < 0 || String(stock).length > 8) {
     res.render("admin/edit-product", { product, categories, error: "❌Invalid stock." });
     return;
   }
@@ -213,7 +213,7 @@ export async function PostAddProduct(req, res, next) {
   }
 
   // Check if stock is a positive number and less than 8 digits
-  if (!stock || stock < 0 || String(stock).length > 8) {
+  if (isNaN(stock) || stock < 0 || String(stock).length > 8) {
     res.render("admin/add-product", { categories, error: "❌Invalid stock." });
     return;
   }

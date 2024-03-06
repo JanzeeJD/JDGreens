@@ -44,7 +44,7 @@ export async function PostEditCoupon(req, res) {
     return;
   }
 
-  if (!discountValue || isNaN(discountValue)) {
+  if (!discountValue || isNaN(discountValue) || discountValue <= 0) {
     res.render("admin/edit-coupon", { coupon: existingCoupon, error: "Discount value must be provided." });
     return;
   }

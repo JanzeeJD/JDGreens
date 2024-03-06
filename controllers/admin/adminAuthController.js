@@ -4,6 +4,7 @@ import User from "../../models/User.js";
 import Category from "../../models/Category.js";
 import express from 'express';
 import { generateStatistics } from "./adminSalesController.js";
+import { getTopSellingCategories, getTopSellingProducts } from "../../utils/analytics.js";
 import Order from "../../models/Order.js";
 
 /**
@@ -66,11 +67,10 @@ export async function GetAdminDashboard(req, res) {
   const monthlyData = await calculateMonthlyOrderAggregates();
   const yearlyData = await calculateYearlyOrderAggregates();
 
-  console.log(weeklyData);
-  console.log(monthlyData);
-  console.log(yearlyData);
+  const bestSellingProducts = await getTopSellingProducts();
+  const bestSellingCategories = await getTopSellingCategories();
 
-  res.render("admin/dashboard", { stats, weeklyData, monthlyData, yearlyData });
+  res.render("admin/dashboard", { stats, weeklyData, monthlyData, yearlyData, bestSellingProducts, bestSellingCategories });
 }
 
 /**
