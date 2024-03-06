@@ -63,6 +63,22 @@ id="sidenav-main">
       </a>
     </li>
     <li class="nav-item">
+      <a class="nav-link text-white <%= locals.activePanel === 'offers' && 'active bg-gradient-primary' %>" href="/admin/offer">
+        <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+          <i class="material-icons opacity-10">attach_money</i>
+        </div>
+        <span class="nav-link-text ms-1">Offer Management</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link text-white <%= locals.activePanel === 'banners' && 'active bg-gradient-primary' %>" href="/admin/banner">
+        <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+          <i class="material-icons opacity-10">bar_chart</i>
+        </div>
+        <span class="nav-link-text ms-1">Banner Management</span>
+      </a>
+    </li>
+    <li class="nav-item">
       <a class="nav-link text-white <%= locals.activePanel === 'sales' && 'active bg-gradient-primary' %>" href="/admin/reports">
         <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
           <i class="material-icons opacity-10">bar_chart</i>
