@@ -18,10 +18,25 @@ const productImageStorage = multer.diskStorage({
   },
 })
 
+const bannerImageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    return cb(null, './public/uploads/banners')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  },
+})
+
 const getProductImages = multer({
   dest: 'public/uploads/products/',
   fileFilter: imageFilter,
   storage: productImageStorage
 });
 
-export { getProductImages };
+const getBannerImage = multer({
+  dest: 'public/uploads/banners/',
+  fileFilter: imageFilter,
+  storage: bannerImageStorage
+});
+
+export { getProductImages, getBannerImage };
