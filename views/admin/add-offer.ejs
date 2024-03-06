@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('partials/_head.ejs') %>
+<body class="g-sidenav-show  bg-gray-200">
+  <%- include('partials/_navbar.ejs') %>
+    <%- include('partials/_asidebar.ejs') %>
+      <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+        <div class="container-fluid py-4">
+          <div class="row">
+            <div class="col-12">
+              <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                  <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-white text-capitalize ps-3">Add Offer</h6>
+                  </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                  <form id="jd-productForm" style="padding: 3rem" action="/admin/offer/add-offer" method="POST">
+                    <label for="offerFor">Offer For:</label><br>
+                    <select disabled id="offerFor" name="offerFor">
+                      <option value="PRODUCT">Product</option>
+                      <option value="CATEGORY">Category</option>
+                    </select>
+                    
+                    <label for="offerProductId">Offer Product:</label>
+                    <select id="offerProductId" name="offerProductId">
+                      <% locals.products.forEach(product => { %>
+                        <option value="<%= product._id %>"><%= product.name %> (₹ <%= product.price %>)</option>
+                      <% }) %>
+                    </select>
+                    
+                    <label style="display: none" for="offerCategoryId">Offer Category:</label>
+                    <select id="offerCategoryId" name="offerCategoryId" hidden>
+                      <% locals.categories.forEach(category => { %>
+                        <option value="<%= category._id %>"><%= category.name %></option>
+                      <% }) %>
+                    </select>
+
+                    <label for="offerType">Offer Type:</label><br>
+                    <select id="offerType" name="offerType">
+                      <option value="PERCENTAGE">PERCENTAGE</option>
+                      <option value="FLAT">FLAT</option>
+                    </select>
+                    <label for="offerValue">Offer Value:</label><br>
+                    <input type="number" id="offerValue" name="offerValue"><br>
+                    <label for="maxDiscount">Max Discount:</label><br>
+                    <input type="number" id="maxDiscount" name="maxDiscount"><br>
+
+                    <input type="submit" value="Add">
+                    <p style="color: red;font-weight:bold"><%= locals.error %></p>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <%- include('partials/_footer.ejs') %>
+          </div>
+      </main>
+      <%- include('partials/_scripts.ejs') %>
+      <script>
+        const offerProductId = document.getElementById('offerProductId');
+        const offerCategoryId = document.getElementById('offerCategoryId');
+
+        const offerFor = document.getElementById('offerFor');
+        offerFor.addEventListener('change', (e) => {
+          if (e.target.value === 'PRODUCT') {
+            offerProductId.disabled = false;
+            offerCategoryId.disabled = true;
+            
+            offerCategoryId.labels[0].style.display = 'none';
+            offerCategoryId.hidden = true;
+
+            offerProductId.labels[0].style.display = 'inline';
+            offerProductId.hidden = false;
+          } else {
+            offerProductId.disabled = true;
+            offerCategoryId.disabled = false;
+            
+            offerCategoryId.labels[0].style.display = 'inline';
+            offerCategoryId.hidden = false;
+
+            offerProductId.labels[0].style.display = 'none';
+            offerProductId.hidden = true;
+          }
+        })
+
+        const maxDiscount = document.getElementById('maxDiscount');
+        const offerValue = document.getElementById('offerValue');
+
+        const offerType = document.getElementById('offerType');
+        offerType.addEventListener('change', (e) => {
+          if (e.target.value === 'FLAT') {
+            maxDiscount.value = Number(offerValue.value);
+            maxDiscount.readOnly = true;
+            maxDiscount.hidden = true;
+            maxDiscount.labels[0].style.display = 'none';
+          } else {
+            maxDiscount.readOnly = false;
+            maxDiscount.hidden = false;
+            maxDiscount.labels[0].style.display = 'inline';
+          }
+        });
+        
+        offerValue.addEventListener('input', (e) => {
+          if (offerType.value === 'FLAT') {
+            maxDiscount.value = Number(e.target.value);
+          }
+        })
+
+      </script>
+   
+</body>
+
+</html>
