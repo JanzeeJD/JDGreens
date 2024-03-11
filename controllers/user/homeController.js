@@ -1,3 +1,4 @@
+import {sendMagicLink, sendMailOTP, transporterConfig } from '../../utils/sendMail.js';
 "use strict";
 
 import express, { request } from 'express';
@@ -81,12 +82,13 @@ export async function PostForgotPassword(req, res) {
     // return res.status(404).send({ error: "User not found" })
   }
 
-  const url = createMagicLink(`http://localhost:3000/change-password`, user._id);
+  const url = createMagicLink(`${process.env.DOMAIN_NAME}/change-password`, user._id);
 
   // req.session.passwordOTP = Math.floor(1000 + Math.random() * 9000);
   // req.session.passwordOTPExpiry = Date.now() + (3 * 60000);
   // console.log(`[otp] ⚡ Password OTP for ${user.email} is ${req.session.passwordOTP} `);
   console.log(`[magic link] ⚡ ${user.email} requested magic link: ${url}`)
+  sendMagicLink(user.email, url, transporterConfig);
   res.status(200).send({ message: "Password OTP sent " });
 }
 
@@ -151,7 +153,7 @@ export async function PostSignup(req, res) {
   const existingUser = await User.findOne({ email: email });
   if (existingUser) {
     if (!existingUser.isVerified) {
-      await existingUser.remove();
+      await existingUser.deleteOne();
     } else {
       res.render("user/auth", { override: true, signupError: "user already exists" })
       return;
@@ -174,6 +176,8 @@ export async function PostSignup(req, res) {
     req.session.otp = Math.floor(1000 + Math.random() * 9000);
     req.session.otpExpiry = Date.now() + (3 * 60000);
     console.log(`[otp] ⚡ OTP for ${user.email} is ${req.session.otp} `);
+    sendMailOTP(user.email, req.session.otp, transporterConfig);
+    
     res.redirect('/signup-otp');
 
   } catch (err) {
