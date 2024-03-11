@@ -193,7 +193,9 @@
                                     document.getElementById('orderStatusText').innerText = "Cancelled";
                                     alertOk("Order Cancelled");
                                     cancelOrderBtn.style.display = "none";
-                                    downloadInvoiceBtn.style.display = "none";
+                                    if (downloadInvoiceBtn) {
+                                        downloadInvoiceBtn.style.display = "none";
+                                    }
                                 } else {
                                     alertNotOk("An error occured.");
                                     console.error(data);
