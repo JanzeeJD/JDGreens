@@ -42,6 +42,7 @@ export async function markSale(date, productId, qty) {
         let sale = await Sale.findOne({ dated: day });
 
         const product = await Product.findById(productId).populate('category');
+        product.stock -= qty;
         const productName = product.name;
         const productCategory = product.category._id;
         const productCategoryName = product.category.name;
@@ -70,6 +71,7 @@ export async function markSale(date, productId, qty) {
 
         // Save the updated document
         await sale.save();
+        await product.save();
         console.log("Sale updated successfully!");
     } catch (error) {
         console.error("Error occurred while adding/updating sale:", error);
